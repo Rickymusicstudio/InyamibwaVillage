@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inyamibwa Residents</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e0f7e9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #0033a0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #1d2e75;
+      padding: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar li {
+      margin: 0 20px;
+    }
+
+    .navbar a {
+      background-color: #263ea0;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    .navbar a:hover {
+      background-color: #1b2a70;
+      color: white;
+    }
+
+    section {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 95%;
+      background: white;
+      border-radius: 12px;
+      border-top: 6px solid #f4d600;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      color: #0033a0;
+      margin-bottom: 15px;
+    }
+
+    .filters {
+      text-align: center;
+      margin: 20px;
+    }
+
+    .filters button {
+      background-color: #ffd700;
+      color: #0033a0;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .filters button:hover {
+      background-color: #ffea80;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background-color: #0033a0;
+      color: white;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:hover {
+      background-color: #d9f2d9;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #007f3f;
+      color: white;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Inyamibwa Cell – Abatuye Umudugudu</h1>
+</header>
+
+<nav>
+  <ul class="navbar">
+    <li><a href="dashboard.html">Ahabanza</a></li>
+    <li><a href="inyamibwa_residents.html">Abatuye Umudugudu</a></li>
+    <li><a href="security.html">Umutekano</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<section>
+  <h2>👥 Residents List</h2>
+  <div class="filters">
+    <button onclick="filterResidents('All')">All</button>
+    <button onclick="filterResidents('permanent')">Permanent</button>
+    <button onclick="filterResidents('renter')">Renter</button>
+    <button onclick="filterResidents('house_worker')">House Worker</button>
+    <div id="residentCount"></div>
+  </div>
+  <table id="residentsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>National ID</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Type</th>
+        <th>Isibo</th>
+        <th>House</th>
+        <th>Has Worker</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>🏘️ Abakuru b’Isibo</h2>
+  <table id="isiboTable">
+    <thead>
+      <tr>
+        <th>Full Name</th>
+        <th>Isibo</th>
+        <th>Phone</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody id="isiboLeadersContainer"></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>🧹 Abakozi bo mu Rugo</h2>
+  <table id="helpersTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>National ID</th>
+        <th>Phone</th>
+        <th>House</th>
+        <th>Isibo</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>🧑‍⚖️ Umukuru w’Umudugudu</h2>
+  <div id="leaderContainer">Loading...</div>
+</section>
+
+<footer>
+  &copy; 2025 Umudugudu w’Inyamibwa
+</footer>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user) window.location.href = 'index.html';
+
+  let allResidents = [];
+
+  function renderResidents(data) {
+    const tbody = document.querySelector('#residentsTable tbody');
+    const count = document.getElementById('residentCount');
+    tbody.innerHTML = '';
+    data.forEach(resident => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${resident.id}</td>
+        <td>${resident.full_name}</td>
+        <td>${resident.national_id || '-'}</td>
+        <td>${resident.phone_number || '-'}</td>
+        <td>${resident.email || '-'}</td>
+        <td>${resident.resident_type}</td>
+        <td>${resident.isibo || '-'}</td>
+        <td>${resident.house || '-'}</td>
+        <td>${resident.has_house_worker ? 'Yes' : 'No'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+    count.textContent = `Residents: ${data.length}`;
+  }
+
+  function renderHelper(helper) {
+    return `
+      <tr>
+        <td>${helper.id}</td>
+        <td>${helper.full_name}</td>
+        <td>${helper.national_id || '-'}</td>
+        <td>${helper.phone_number || '-'}</td>
+        <td>${helper.works_for_house}</td>
+        <td>${helper.isibo}</td>
+      </tr>`;
+  }
+
+  function renderIsiboLeader(i) {
+    return `
+      <tr>
+        <td>${i.full_name}</td>
+        <td>${i.isibo}</td>
+        <td>${i.phone}</td>
+        <td>${i.email}</td>
+      </tr>`;
+  }
+
+  function filterResidents(type) {
+    if (type === 'All') return renderResidents(allResidents);
+    renderResidents(allResidents.filter(r => r.resident_type === type));
+  }
+
+  async function fetchAndRender(url, containerId, renderFn) {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      document.getElementById(containerId).innerHTML = Array.isArray(data)
+        ? data.map(renderFn).join('')
+        : renderFn(data);
+    } catch {
+      document.getElementById(containerId).innerHTML = `<tr><td colspan="4">Error loading data.</td></tr>`;
+    }
+  }
+
+  async function loadAll() {
+    const res = await fetch('http://127.0.0.1:5000/residents');
+    allResidents = await res.json();
+    renderResidents(allResidents);
+
+    const helpers = await fetch('http://127.0.0.1:5000/helpers').then(r => r.json());
+    document.querySelector('#helpersTable tbody').innerHTML = helpers.map(renderHelper).join('');
+
+    fetchAndRender('http://127.0.0.1:5000/isibo_leaders', 'isiboLeadersContainer', renderIsiboLeader);
+
+    fetchAndRender('http://127.0.0.1:5000/leader', 'leaderContainer', leader => `
+      <p><strong>Izina:</strong> ${leader.full_name}</p>
+      <p><strong>Telefoni:</strong> ${leader.phone_number}</p>
+      <p><strong>Email:</strong> ${leader.email}</p>
+    `);
+  }
+
+  loadAll();
+</script>
+
+</body>
+</html>

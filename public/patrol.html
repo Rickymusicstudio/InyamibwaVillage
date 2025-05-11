@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cell Patrol Schedule - Inyamibwa</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f8ff;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #004080;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #004080;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #cce6ff;
+    }
+
+    tr:hover {
+      background-color: #f1f9ff;
+    }
+
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📅 Assign Cell Patrol</h2>
+
+<form id="patrolForm">
+  <label>Resident</label>
+  <select id="residentSelect" required></select>
+
+  <label>Patrol Date</label>
+  <input type="date" id="patrol_date" required>
+
+  <label>Time (Morning, Night, etc)</label>
+  <input type="text" id="patrol_time" placeholder="e.g. Morning or 8AM-12PM">
+
+  <label>Area / Zone</label>
+  <input type="text" id="area" placeholder="e.g. Main Road">
+
+  <label>Note (optional)</label>
+  <textarea id="note"></textarea>
+
+  <button type="submit">Assign Patrol</button>
+  <div id="message"></div>
+</form>
+
+<h2>📝 Patrol Schedule</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Resident</th>
+      <th>Area</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody id="patrolTable">
+    <!-- Rows will be added here -->
+  </tbody>
+</table>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user || user.role !== 'admin') window.location.href = 'index.html';
+
+  const residentSelect = document.getElementById('residentSelect');
+  const patrolTable = document.getElementById('patrolTable');
+  const message = document.getElementById('message');
+
+  async function loadResidents() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/residents');
+      const residents = await res.json();
+
+      residentSelect.innerHTML = residents.map(r =>
+        `<option value="${r.id}">${r.full_name}</option>`
+      ).join('');
+    } catch {
+      alert('❌ Failed to load residents');
+    }
+  }
+
+  async function loadPatrols() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/patrols');
+      const data = await res.json();
+
+      patrolTable.innerHTML = data.map(p => `
+        <tr>
+          <td>${p.patrol_date}</td>
+          <td>${p.patrol_time || '-'}</td>
+          <td>${p.full_name}</td>
+          <td>${p.area || '-'}</td>
+          <td>${p.note || '-'}</td>
+        </tr>
+      `).join('');
+    } catch {
+      patrolTable.innerHTML = '<tr><td colspan="5">❌ Failed to load patrols</td></tr>';
+    }
+  }
+
+  document.getElementById('patrolForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+      resident_id: residentSelect.value,
+      patrol_date: document.getElementById('patrol_date').value,
+      patrol_time: document.getElementById('patrol_time').value.trim(),
+      area: document.getElementById('area').value.trim(),
+      note: document.getElementById('note').value.trim()
+    };
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/patrols', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error();
+
+      message.style.color = 'green';
+      message.textContent = '✅ Patrol assigned!';
+      e.target.reset();
+      loadPatrols();
+    } catch {
+      message.style.color = 'red';
+      message.textContent = '❌ Failed to assign patrol.';
+    }
+  });
+
+  loadResidents();
+  loadPatrols();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inyamibwa Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e9f8ee;
+      margin: 0;
+    }
+
+    header {
+      background: #263ea0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    #logoutBtn {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: #d9534f;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    nav {
+      background-color: #1d2e75;
+      padding: 10px 0;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar li {
+      margin: 0 20px;
+    }
+
+    .navbar a {
+      background-color: #263ea0;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    section {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 900px;
+      background: white;
+      border-radius: 12px;
+      border-top: 6px solid #f4d600;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      color: #263ea0;
+    }
+
+    .update {
+      background: #f1f9ff;
+      border-left: 4px solid #263ea0;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+
+    .update small {
+      display: block;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Murakaza neza ku rubuga rw’umudugudu w’Inyamibwa!</h1>
+  <p>Logged in as: <strong><span id="userName"></span></strong></p>
+  <button id="logoutBtn">Logout</button>
+</header>
+
+<nav>
+  <ul class="navbar">
+    <li><a href="dashboard.html">Ahabanza</a></li>
+    <li><a href="inyamibwa_residents.html">Abatuye Umudugudu</a></li>
+    <li><a href="security.html">Umutekano</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="thoughts.html">Ibitekerezo</a></li>
+  </ul>
+</nav>
+
+<section>
+  <h2>Ikaze</h2>
+  <p>
+    Murakaza neza k'urubuga rw'Umudugudu w'Inyamibwa. Uru rubuga rugenewe  ihuriro ry’abaturage bose b’umudugudu wacu,
+    aho mushobora kubona amakuru y'umudugudu, ubufasha butandukanye, ndetse no gutanga ibitekerezo byubaka umudugudu wacu.
+  </p>
+  <ul>
+    <li>📌 Amakuru y’ingirakamaro yerekeye ibikorwa n’iterambere ry’umudugudu</li>
+    <li>🛠️ Ubufasha mu byerekeye imibereho myiza, umutekano, n’imibano</li>
+    <li>💬 Uburyo bwo gutanga ibibazo, ibitekerezo cyangwa ibitekerezo byubaka</li>
+    <li>🔗 Serivisi zihuza abaturage n’ubuyobozi</li>
+  </ul>
+  <p>
+    Dukomeze twubake umudugudu utekanye kandi uhamye, dutahiriza umugozi umwe.
+  </p>
+  <strong>Murakaza neza, kandi murisanga!</strong>
+</section>
+
+<section>
+  <h2>📢 Announcements</h2>
+  <div id="updatesContainer">Loading updates...</div>
+</section>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user) window.location.href = 'index.html';
+  document.getElementById('userName').textContent = user.full_name || user.national_id;
+
+  document.getElementById('logoutBtn').onclick = () => {
+    localStorage.removeItem('loggedUser');
+    window.location.href = 'index.html';
+  };
+
+  async function loadUpdates() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/updates');
+      const updates = await res.json();
+      const container = document.getElementById('updatesContainer');
+      container.innerHTML = updates.map(u => `
+        <div class="update">
+          <p>${u.message}</p>
+          <small>🕒 ${new Date(u.created_at).toLocaleString()}</small>
+        </div>
+      `).join('');
+    } catch {
+      document.getElementById('updatesContainer').innerHTML = '<p>❌ Failed to load updates.</p>';
+    }
+  }
+
+  loadUpdates();
+</script>
+
+</body>
+</html>

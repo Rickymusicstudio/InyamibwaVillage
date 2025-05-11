@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inyamibwa Cell - Register House Helper</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e7f8f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #0033a0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    form {
+      background-color: white;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #007f3f;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #005a2c;
+    }
+
+    #responseMessage {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #ffd700;
+      color: black;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Register House Helper</h1>
+</header>
+
+<form id="helperForm">
+  <label>Full Name:</label>
+  <input type="text" name="full_name" required>
+
+  <label>National ID:</label>
+  <input type="text" name="national_id" required>
+
+  <label>Phone Number:</label>
+  <input type="text" name="phone_number">
+
+  <label>Isibo (Street Number):</label>
+  <input type="text" name="isibo" required>
+
+  <label>House Number (They Work For):</label>
+  <input type="text" name="works_for_house" required>
+
+  <button type="submit">Submit</button>
+</form>
+
+<p id="responseMessage"></p>
+
+<footer>
+  &copy; 2025 Inyamibwa Cell - House Helper Registry
+</footer>
+
+<script>
+  const form = document.getElementById('helperForm');
+  const message = document.getElementById('responseMessage');
+
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/helpers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error('Failed to save helper');
+
+      const result = await res.json();
+      message.style.color = 'green';
+      message.textContent = `✅ Registered: ${result.full_name}`;
+      form.reset();
+    } catch (error) {
+      message.style.color = 'red';
+      message.textContent = `❌ Error: ${error.message}`;
+    }
+  });
+</script>
+
+</body>
+</html>

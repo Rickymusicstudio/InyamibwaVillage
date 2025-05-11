@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Panel - Inyamibwa</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #e9f8ee;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #263ea0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .panel {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      border-top: 6px solid #f4d600;
+      box-shadow: 0 0 14px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+
+    h2 {
+      color: #263ea0;
+    }
+
+    .role-label {
+      font-weight: bold;
+      color: #28a745;
+      margin-bottom: 25px;
+    }
+
+    .link-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .link-grid a,
+    .link-grid button {
+      display: inline-block;
+      width: 180px;
+      text-align: center;
+      padding: 14px;
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .link-grid a:hover,
+    .link-grid button:hover {
+      background-color: #218838;
+    }
+
+    .logout-btn {
+      background-color: #d9534f;
+    }
+
+    .logout-btn:hover {
+      background-color: #c9302c;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Admin Control Panel</h1>
+</header>
+
+<div class="panel">
+  <h2>Welcome, Admin</h2>
+  <p class="role-label">Logged in as: <span id="adminName"></span> (<span id="adminRole"></span>)</p>
+
+  <div class="link-grid">
+    <a href="residents.html">👥 Residents</a>
+    <a href="leader.html">👨‍⚖️ Cell Leader</a>
+    <a href="isibo_leaders.html">🏘️ Isibo Leaders</a>
+    <a href="helpers.html">🧹 House Helpers</a>
+    <a href="updates.html">📢 Cell Updates</a>
+    <a href="thoughts.html">💬 Thoughts</a>
+    <a href="irondo.html">🛡️ Irondo Team</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+
+  if (!user || user.role !== 'admin') {
+    alert('Access denied: Admins only');
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('adminName').textContent = user.full_name;
+  document.getElementById('adminRole').textContent = user.role;
+
+  function logout() {
+    localStorage.removeItem('loggedUser');
+    window.location.href = 'index.html';
+  }
+</script>
+
+</body>
+</html>

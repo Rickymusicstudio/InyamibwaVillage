@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inyamibwa Cell - Residents List</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e0f7e9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #0033a0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .filters {
+      text-align: center;
+      margin: 20px;
+    }
+
+    .filters button {
+      background-color: #ffd700;
+      color: #0033a0;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .filters button:hover {
+      background-color: #ffea80;
+    }
+
+    #residentCount {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 95%;
+      margin: 30px auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #ffd700;
+    }
+
+    tr:hover {
+      background-color: #d9f2d9;
+    }
+
+    button.action-btn {
+      background-color: #007f3f;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      margin: 4px 2px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button.action-btn:hover {
+      background-color: #005a2c;
+    }
+
+    button.delete-btn {
+      background-color: #d9534f;
+    }
+
+    button.delete-btn:hover {
+      background-color: #c9302c;
+    }
+
+    .export-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #004080;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background-color: #002f66;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #007f3f;
+      color: white;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+
+    /* Edit Modal */
+    #editModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    #editModalContent {
+      background: white;
+      max-width: 500px;
+      margin: 100px auto;
+      padding: 20px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    #editModalContent input,
+    #editModalContent select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Inyamibwa Cell - Registered Residents</h1>
+</header>
+
+<div class="filters">
+  <button onclick="filterResidents('All')">All</button>
+  <button onclick="filterResidents('permanent')">Permanent</button>
+  <button onclick="filterResidents('renter')">Renter</button>
+  <button onclick="filterResidents('house_worker')">House Worker</button>
+  <button class="export-btn" onclick="exportResidentsToCSV()">📥 Export Residents to CSV</button>
+  <div id="residentCount"></div>
+</div>
+
+<table id="residentsTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Full Name</th>
+      <th>National ID</th>
+      <th>Phone</th>
+      <th>Email</th>
+      <th>Type</th>
+      <th>Isibo</th>
+      <th>House</th>
+      <th>Has Worker</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Data will load here -->
+  </tbody>
+</table>
+
+<!-- Edit Modal -->
+<div id="editModal">
+  <div id="editModalContent">
+    <h3>Edit Resident</h3>
+    <label>Full Name:</label>
+    <input type="text" id="edit_full_name">
+    <label>National ID:</label>
+    <input type="text" id="edit_national_id">
+    <label>Phone:</label>
+    <input type="text" id="edit_phone_number">
+    <label>Email:</label>
+    <input type="text" id="edit_email">
+    <label>Type:</label>
+    <input type="text" id="edit_resident_type">
+    <label>Isibo:</label>
+    <input type="text" id="edit_isibo">
+    <label>House:</label>
+    <input type="text" id="edit_house">
+    <label>Has House Worker:</label>
+    <select id="edit_has_house_worker">
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </select>
+    <br>
+    <button onclick="submitEdit()">💾 Save</button>
+    <button onclick="closeModal()">❌ Cancel</button>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 Inyamibwa Cell Management
+</footer>
+
+<script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user) window.location.href = 'index.html';
+
+  let allResidents = [];
+  let editingResidentId = null;
+
+  async function loadResidents() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/residents');
+      const data = await res.json();
+      allResidents = data;
+      renderResidents(data);
+    } catch (err) {
+      alert('❌ Failed to load residents.');
+    }
+  }
+
+  function renderResidents(data) {
+    const tbody = document.querySelector('#residentsTable tbody');
+    const count = document.getElementById('residentCount');
+    tbody.innerHTML = '';
+
+    data.forEach(resident => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${resident.id}</td>
+        <td>${resident.full_name}</td>
+        <td>${resident.national_id || '-'}</td>
+        <td>${resident.phone_number || '-'}</td>
+        <td>${resident.email || '-'}</td>
+        <td>${resident.resident_type}</td>
+        <td>${resident.isibo || '-'}</td>
+        <td>${resident.house || '-'}</td>
+        <td>${resident.has_house_worker ? 'Yes' : 'No'}</td>
+        <td>
+          <button class="action-btn" onclick="editResident(${resident.id})">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteResident(${resident.id})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    count.textContent = `Showing ${data.length} resident(s)`;
+  }
+
+  function filterResidents(type) {
+    if (type === 'All') {
+      renderResidents(allResidents);
+    } else {
+      const filtered = allResidents.filter(r =>
+        r.resident_type && r.resident_type.toLowerCase() === type.toLowerCase()
+      );
+      renderResidents(filtered);
+    }
+  }
+
+  async function deleteResident(id) {
+    if (!confirm('Are you sure you want to delete this resident?')) return;
+    try {
+      await fetch(`http://127.0.0.1:5000/residents/${id}`, { method: 'DELETE' });
+      loadResidents();
+    } catch (err) {
+      alert('❌ Error deleting: ' + err.message);
+    }
+  }
+
+  function exportResidentsToCSV() {
+    fetch('http://127.0.0.1:5000/residents')
+      .then(response => response.json())
+      .then(data => {
+        if (!data.length) return alert('No resident data to export.');
+
+        const headers = Object.keys(data[0]);
+        const csvRows = [];
+
+        csvRows.push(headers.join(','));
+
+        data.forEach(row => {
+          const values = headers.map(header => `"${(row[header] ?? '').toString().replace(/"/g, '""')}"`);
+          csvRows.push(values.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'residents_export.csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(err => {
+        console.error('❌ Failed to export CSV:', err);
+        alert('Error exporting residents.');
+      });
+  }
+
+  function editResident(id) {
+    const resident = allResidents.find(r => r.id === id);
+    if (!resident) return;
+
+    editingResidentId = id;
+    document.getElementById('edit_full_name').value = resident.full_name || '';
+    document.getElementById('edit_national_id').value = resident.national_id || '';
+    document.getElementById('edit_phone_number').value = resident.phone_number || '';
+    document.getElementById('edit_email').value = resident.email || '';
+    document.getElementById('edit_resident_type').value = resident.resident_type || '';
+    document.getElementById('edit_isibo').value = resident.isibo || '';
+    document.getElementById('edit_house').value = resident.house || '';
+    document.getElementById('edit_has_house_worker').value = resident.has_house_worker ? 'true' : 'false';
+
+    document.getElementById('editModal').style.display = 'block';
+  }
+
+  function closeModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  async function submitEdit() {
+    const data = {
+      full_name: document.getElementById('edit_full_name').value.trim(),
+      national_id: document.getElementById('edit_national_id').value.trim(),
+      phone_number: document.getElementById('edit_phone_number').value.trim(),
+      email: document.getElementById('edit_email').value.trim(),
+      resident_type: document.getElementById('edit_resident_type').value.trim(),
+      isibo: document.getElementById('edit_isibo').value.trim(),
+      house: document.getElementById('edit_house').value.trim(),
+      has_house_worker: document.getElementById('edit_has_house_worker').value === 'true'
+    };
+
+    try {
+      await fetch(`http://127.0.0.1:5000/residents/${editingResidentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      closeModal();
+      loadResidents();
+    } catch (err) {
+      alert('❌ Failed to update resident.');
+    }
+  }
+
+  loadResidents();
+</script>
+
+</body>
+</html>

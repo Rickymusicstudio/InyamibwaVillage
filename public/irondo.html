@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Irondo Team - Inyamibwa</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5fbff;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #003366;
+    }
+    form {
+      max-width: 500px;
+      margin: 0 auto 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #007f3f;
+      color: white;
+      border: none;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005f2f;
+    }
+    .team-section {
+      margin: 20px auto;
+      max-width: 700px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .member {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .actions button {
+      margin-left: 10px;
+      background-color: #b30000;
+    }
+    .actions button:hover {
+      background-color: #8c0000;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🛡️ Manage Irondo Team</h2>
+
+  <form id="teamForm">
+    <label>Full Name</label>
+    <input type="text" id="full_name" required>
+
+    <label>Phone Number</label>
+    <input type="text" id="phone" required>
+
+    <label>Shift</label>
+    <select id="shift_type" required>
+      <option value="day">Day</option>
+      <option value="night">Night</option>
+    </select>
+
+    <button type="submit">Add to Team</button>
+  </form>
+
+  <div class="team-section" id="dayShift">
+    <h3>🌞 Day Shift</h3>
+    <div id="dayList">Loading...</div>
+  </div>
+
+  <div class="team-section" id="nightShift">
+    <h3>🌙 Night Shift</h3>
+    <div id="nightList">Loading...</div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('loggedUser'));
+    if (!user || (user.role !== 'admin' && user.role !== 'security')) {
+      alert('Access denied.');
+      window.location.href = 'index.html';
+    }
+
+    const form = document.getElementById('teamForm');
+    const fullNameInput = document.getElementById('full_name');
+    const phoneInput = document.getElementById('phone');
+    const shiftSelect = document.getElementById('shift_type');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const member = {
+        full_name: fullNameInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        shift_type: shiftSelect.value
+      };
+
+      try {
+        await fetch('http://127.0.0.1:5000/irondo_team', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(member)
+        });
+        form.reset();
+        loadTeam();
+      } catch {
+        alert('❌ Failed to add member.');
+      }
+    });
+
+    async function loadTeam() {
+      try {
+        const res = await fetch('http://127.0.0.1:5000/irondo_team');
+        const members = await res.json();
+        const dayList = document.getElementById('dayList');
+        const nightList = document.getElementById('nightList');
+
+        dayList.innerHTML = '';
+        nightList.innerHTML = '';
+
+        members.forEach(m => {
+          const el = document.createElement('div');
+          el.className = 'member';
+          el.innerHTML = `
+            <div><strong>${m.full_name}</strong><br>📞 ${m.phone}</div>
+            <div class="actions">
+              <button onclick="deleteMember(${m.id})">🗑️</button>
+            </div>
+          `;
+          (m.shift_type === 'day' ? dayList : nightList).appendChild(el);
+        });
+
+      } catch {
+        document.getElementById('dayList').textContent = '❌ Failed to load';
+        document.getElementById('nightList').textContent = '❌ Failed to load';
+      }
+    }
+
+    async function deleteMember(id) {
+      if (!confirm('Are you sure you want to remove this member?')) return;
+      try {
+        await fetch(`http://127.0.0.1:5000/irondo_team/${id}`, { method: 'DELETE' });
+        loadTeam();
+      } catch {
+        alert('❌ Failed to delete member.');
+      }
+    }
+
+    loadTeam();
+  </script>
+
+</body>
+</html>

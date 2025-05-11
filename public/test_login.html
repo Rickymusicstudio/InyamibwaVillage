@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Test</title>
+</head>
+<body>
+  <h2>Test Login to Inyamibwa</h2>
+  <input type="text" id="nid" placeholder="National ID" /><br><br>
+  <input type="password" id="pw" placeholder="Password" /><br><br>
+  <button onclick="testLogin()">Login</button>
+  <pre id="output" style="margin-top:20px; background:#f3f3f3; padding:10px;"></pre>
+
+  <script>
+    async function testLogin() {
+      const national_id = document.getElementById('nid').value.trim();
+      const password = document.getElementById('pw').value;
+
+      const output = document.getElementById('output');
+      output.textContent = '⏳ Sending request...';
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ national_id, password })
+        });
+
+        const result = await res.json();
+        output.textContent = `✅ Status: ${res.status}\n\n` + JSON.stringify(result, null, 2);
+      } catch (err) {
+        output.textContent = '❌ Fetch error:\n' + err;
+      }
+    }
+  </script>
+</body>
+</html>

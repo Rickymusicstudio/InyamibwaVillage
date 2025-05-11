@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register as Resident</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e7f8f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #0033a0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    form {
+      background-color: white;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #007f3f;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #005a2c;
+    }
+
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #ffd700;
+      color: black;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Resident Registration</h1>
+</header>
+
+<form id="residentForm">
+  <label>Full Name:</label>
+  <input type="text" name="full_name" required>
+
+  <label>National ID:</label>
+  <input type="text" name="national_id" required>
+
+  <label>Phone Number:</label>
+  <input type="text" name="phone_number">
+
+  <label>Email:</label>
+  <input type="email" name="email">
+
+  <label>Resident Type:</label>
+  <select name="resident_type">
+    <option value="Permanent">Permanent</option>
+    <option value="Renter">Renter</option>
+    <option value="House Worker">House Worker</option>
+  </select>
+
+  <label>Isibo (Street Number):</label>
+  <input type="text" name="isibo" required>
+
+  <label>House Number:</label>
+  <input type="text" name="house" required>
+
+  <label>Has House Worker:</label>
+  <select name="has_house_worker">
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+  </select>
+
+  <button type="submit">Submit</button>
+</form>
+
+<div id="message"></div>
+
+<footer>
+  &copy; 2025 Inyamibwa Cell Registration System
+</footer>
+
+<script>
+  const form = document.getElementById('residentForm');
+  const message = document.getElementById('message');
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/residents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error('Registration failed');
+
+      const result = await res.json();
+      message.style.color = 'green';
+      message.innerHTML = `
+        ✅ Registration successful for <strong>${result.full_name}</strong><br>
+        Default login password is: <strong>inyamibwa123</strong><br><br>
+        <a href="index.html">Go to Login</a>
+      `;
+      form.reset();
+    } catch (err) {
+      message.style.color = 'red';
+      message.textContent = '❌ ' + err.message;
+    }
+  });
+</script>
+
+</body>
+</html>

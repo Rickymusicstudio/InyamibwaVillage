@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>House Helpers - Inyamibwa Cell</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4fff6;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #004d26;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #007f3f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #c8f7c5;
+    }
+
+    tr:hover {
+      background-color: #e6ffe6;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background-color: #1d4ed8;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #d9534f;
+      color: white;
+    }
+
+    .export-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #004080;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background-color: #002f66;
+    }
+
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🧹 Register House Helper</h2>
+
+<form id="helperForm">
+  <label>Full Name</label>
+  <input type="text" id="full_name" required>
+
+  <label>National ID</label>
+  <input type="text" id="national_id">
+
+  <label>Phone Number</label>
+  <input type="text" id="phone_number">
+
+  <label>Works for House</label>
+  <input type="text" id="works_for_house" required>
+
+  <label>Isibo</label>
+  <input type="text" id="isibo" required>
+
+  <button type="submit">Save Helper</button>
+  <div id="message"></div>
+</form>
+
+<h2>Registered Helpers</h2>
+
+<button class="export-btn" onclick="exportHelpersToCSV()">📥 Export Helpers to CSV</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Full Name</th>
+      <th>National ID</th>
+      <th>Phone</th>
+      <th>House</th>
+      <th>Isibo</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="helpersTable">
+    <!-- Data loads here -->
+  </tbody>
+</table>
+
+<script>
+  const form = document.getElementById('helperForm');
+  const message = document.getElementById('message');
+  const table = document.getElementById('helpersTable');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+      full_name: document.getElementById('full_name').value.trim(),
+      national_id: document.getElementById('national_id').value.trim(),
+      phone_number: document.getElementById('phone_number').value.trim(),
+      works_for_house: document.getElementById('works_for_house').value.trim(),
+      isibo: document.getElementById('isibo').value.trim()
+    };
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/helpers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error();
+      message.style.color = 'green';
+      message.textContent = '✅ Helper saved!';
+      form.reset();
+      loadHelpers();
+    } catch {
+      message.style.color = 'red';
+      message.textContent = '❌ Failed to save helper.';
+    }
+  });
+
+  async function loadHelpers() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/helpers');
+      const data = await res.json();
+      table.innerHTML = '';
+
+      data.forEach(h => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${h.id}</td>
+          <td>${h.full_name}</td>
+          <td>${h.national_id || '-'}</td>
+          <td>${h.phone_number || '-'}</td>
+          <td>${h.works_for_house}</td>
+          <td>${h.isibo}</td>
+          <td>
+            <button class="action-btn edit-btn" onclick="editHelper(${h.id})">Edit</button>
+            <button class="action-btn delete-btn" onclick="deleteHelper(${h.id})">Delete</button>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+    } catch {
+      table.innerHTML = '<tr><td colspan="7">❌ Failed to load helpers.</td></tr>';
+    }
+  }
+
+  async function deleteHelper(id) {
+    if (!confirm('Are you sure you want to delete this helper?')) return;
+    try {
+      await fetch(`http://127.0.0.1:5000/helpers/${id}`, { method: 'DELETE' });
+      loadHelpers();
+    } catch {
+      alert('❌ Error deleting helper.');
+    }
+  }
+async function editHelper(id) {
+  // Fetch the current data for prefill (optional)
+  const row = Array.from(document.querySelectorAll('#helpersTable tr'))
+    .find(r => r.querySelector('td')?.textContent == id);
+
+  const currentFullName = row?.children[1]?.textContent || '';
+  const currentNationalId = row?.children[2]?.textContent || '';
+  const currentPhone = row?.children[3]?.textContent || '';
+  const currentHouse = row?.children[4]?.textContent || '';
+  const currentIsibo = row?.children[5]?.textContent || '';
+
+  const full_name = prompt('Edit full name:', currentFullName);
+  const national_id = prompt('Edit national ID:', currentNationalId);
+  const phone_number = prompt('Edit phone number:', currentPhone);
+  const works_for_house = prompt('Edit house number:', currentHouse);
+  const isibo = prompt('Edit isibo:', currentIsibo);
+
+  if (!full_name || !works_for_house || !isibo) {
+    alert('❌ Full name, house and isibo are required.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://127.0.0.1:5000/helpers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name, national_id, phone_number, works_for_house, isibo })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Unknown error');
+    }
+
+    alert('✅ Helper updated successfully.');
+    loadHelpers();
+  } catch (err) {
+    console.error('❌ Update error:', err);
+    alert('❌ Failed to update helper.');
+  }
+}
+
+
+  function exportHelpersToCSV() {
+    fetch('http://127.0.0.1:5000/helpers')
+      .then(response => response.json())
+      .then(data => {
+        if (!data.length) return alert('No helper data to export.');
+
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(',')];
+
+        data.forEach(row => {
+          const values = headers.map(header => `"${(row[header] ?? '').toString().replace(/"/g, '""')}"`);
+          csvRows.push(values.join(','));
+        });
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'helpers_export.csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(err => {
+        console.error('❌ Failed to export CSV:', err);
+        alert('Error exporting helpers.');
+      });
+  }
+
+  loadHelpers();
+</script>
+
+</body>
+</html>

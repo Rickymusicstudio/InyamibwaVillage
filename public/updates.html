@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Cell Updates</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9fbff;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #003366;
+    }
+    form, .updates-list {
+      max-width: 700px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #007f3f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .update {
+      margin-top: 15px;
+      padding: 10px;
+      background: #eef5ff;
+      border-left: 5px solid #0033a0;
+    }
+    #message {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📢 Post a New Cell Update</h2>
+
+<form id="updateForm">
+  <textarea id="message" placeholder="Write an important update..."></textarea>
+  <button type="submit">Post Update</button>
+  <div id="feedback"></div>
+</form>
+
+<div class="updates-list" id="updatesContainer">Loading updates...</div>
+
+<script>
+  async function loadUpdates() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/updates');
+      const data = await res.json();
+      const container = document.getElementById('updatesContainer');
+
+      if (data.length === 0) {
+        container.textContent = 'No updates posted yet.';
+        return;
+      }
+
+      container.innerHTML = data.map(update =>
+        `<div class="update">
+          ${update.message}<br>
+          <small>🕒 ${new Date(update.created_at).toLocaleString()}</small>
+        </div>`
+      ).join('');
+    } catch {
+      document.getElementById('updatesContainer').textContent = '❌ Failed to load updates.';
+    }
+  }
+
+  document.getElementById('updateForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const feedback = document.getElementById('feedback');
+    const msg = document.getElementById('message').value.trim();
+    if (!msg) return;
+
+    try {
+      const res = await fetch('http://127.0.0.1:5000/updates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      });
+
+      if (!res.ok) throw new Error();
+      feedback.style.color = 'green';
+      feedback.textContent = '✅ Update posted!';
+      document.getElementById('message').value = '';
+      loadUpdates();
+    } catch {
+      feedback.style.color = 'red';
+      feedback.textContent = '❌ Failed to post update.';
+    }
+  });
+
+  loadUpdates();
+</script>
+
+</body>
+</html>
