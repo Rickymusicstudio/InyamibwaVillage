@@ -8,7 +8,8 @@ const multer = require('multer');
 const path = require('path');
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
+
 
 // ✅ PostgreSQL connection
 const pool = new Pool({
