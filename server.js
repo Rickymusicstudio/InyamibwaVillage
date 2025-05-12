@@ -184,3 +184,13 @@ app.get('/db-test', async (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Server is running on port ${port}`);
 });
+
+app.get('/helpers', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM house_helpers ORDER BY id DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Failed to load helpers:', err.message);
+    res.status(500).json({ error: 'Failed to load helpers' });
+  }
+});
