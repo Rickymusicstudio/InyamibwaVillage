@@ -9,52 +9,45 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// ✅ PostgreSQL connection
+// PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 });
 
-// ✅ Middleware
+// Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
-
-// ✅ Multer setup
+// Multer setup
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `resident_${Date.now()}${ext}`);
-  }
+  },
 });
 const upload = multer({ storage });
 
-// ✅ Root
-app.get('/', (req, res) => {
-  res.send('📡 Inyamibwa API is live!');
-});
-
-// ✅ Role middleware
+// Role check middleware
 function authorizeSecurityOrAdmin(req, res, next) {
   const role = req.headers['x-role'];
   if (role === 'admin' || role === 'security') return next();
   return res.status(403).json({ error: 'Access denied' });
 }
 
-// ✅ Register resident
+// Root
+app.get('/', (req, res) => res.send('📡 Inyamibwa API is live!'));
+
+// Register resident
 app.post('/residents', upload.single('photo'), async (req, res) => {
-  const {
-    full_name, phone_number, email, resident_type,
-    house, isibo, has_house_worker, national_id
-  } = req.body;
+  const { full_name, phone_number, email, resident_type, house, isibo, has_house_worker, national_id } = req.body;
   const photo = req.file ? req.file.filename : null;
 
   try {
     const exists = await pool.query('SELECT 1 FROM residents WHERE national_id = $1', [national_id]);
-    if (exists.rows.length > 0) {
-      return res.status(409).json({ error: 'National ID already registered' });
-    }
+    if (exists.rows.length > 0) return res.status(409).json({ error: 'National ID already registered' });
 
     const residentResult = await pool.query(`
       INSERT INTO residents 
@@ -78,7 +71,7 @@ app.post('/residents', upload.single('photo'), async (req, res) => {
   }
 });
 
-// ✅ Login
+// Login
 app.post('/users/login', async (req, res) => {
   const { national_id, password } = req.body;
 
@@ -106,28 +99,23 @@ app.post('/users/login', async (req, res) => {
   }
 });
 
-// ✅ Residents (GET, PUT, DELETE)
+// CRUD: Residents
 app.get('/residents', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM residents ORDER BY id DESC');
     res.json(result.rows);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch residents' });
   }
 });
-
 app.put('/residents/:id', async (req, res) => {
   const { id } = req.params;
-  const {
-    full_name, national_id, phone_number, email,
-    resident_type, house, isibo, has_house_worker
-  } = req.body;
-
+  const { full_name, national_id, phone_number, email, resident_type, house, isibo, has_house_worker } = req.body;
   try {
     const result = await pool.query(`
       UPDATE residents SET
-      full_name=$1, national_id=$2, phone_number=$3, email=$4,
-      resident_type=$5, house=$6, isibo=$7, has_house_worker=$8
+        full_name=$1, national_id=$2, phone_number=$3, email=$4,
+        resident_type=$5, house=$6, isibo=$7, has_house_worker=$8
       WHERE id = $9 RETURNING *`,
       [full_name, national_id, phone_number, email, resident_type, house, isibo, has_house_worker, id]);
     res.json(result.rows[0]);
@@ -135,7 +123,6 @@ app.put('/residents/:id', async (req, res) => {
     res.status(500).json({ error: 'Update failed' });
   }
 });
-
 app.delete('/residents/:id', async (req, res) => {
   try {
     await pool.query('DELETE FROM residents WHERE id = $1', [req.params.id]);
@@ -145,7 +132,7 @@ app.delete('/residents/:id', async (req, res) => {
   }
 });
 
-// ✅ Dashboard Stats
+// Dashboard Stats
 app.get('/stats', async (req, res) => {
   try {
     const [residents, helpers, updates, thoughts] = await Promise.all([
@@ -154,7 +141,6 @@ app.get('/stats', async (req, res) => {
       pool.query('SELECT COUNT(*) FROM cell_updates'),
       pool.query('SELECT COUNT(*) FROM thoughts')
     ]);
-
     res.json({
       residentCount: Number(residents.rows[0].count),
       helperCount: Number(helpers.rows[0].count),
@@ -166,11 +152,251 @@ app.get('/stats', async (req, res) => {
   }
 });
 
-// ✅ Generic helpers to manage: leaders, helpers, thoughts, irondo team
-// (same as before – if you want me to extract and clean all those routes too, I can continue)
+// Cell Leader
+app.post('/leader', async (req, res) => {
+  const { full_name, phone_number, email } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO cell_leader (full_name, phone_number, email)
+      VALUES ($1, $2, $3) RETURNING *`,
+      [full_name, phone_number, email]);
+    res.status(201).json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to save leader' });
+  }
+});
+app.get('/leader', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM cell_leader ORDER BY created_at DESC LIMIT 1');
+    res.json(result.rows[0] || {});
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch leader' });
+  }
+});
+app.delete('/leader/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM cell_leader WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Leader deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete leader' });
+  }
+});
+
+// House Helpers
+app.post('/helpers', async (req, res) => {
+  const { full_name, national_id, phone_number, works_for_house, isibo } = req.body;
+  if (!full_name || !works_for_house || !isibo) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    const result = await pool.query(`
+      INSERT INTO house_helpers (full_name, national_id, phone_number, works_for_house, isibo)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [full_name, national_id, phone_number, works_for_house, isibo]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save helper' });
+  }
+});
+app.get('/helpers', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM house_helpers ORDER BY id DESC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load helpers' });
+  }
+});
+app.put('/helpers/:id', async (req, res) => {
+  const { id } = req.params;
+  const { full_name, national_id, phone_number, works_for_house, isibo } = req.body;
+  try {
+    const result = await pool.query(`
+      UPDATE house_helpers
+      SET full_name = $1, national_id = $2, phone_number = $3, works_for_house = $4, isibo = $5
+      WHERE id = $6 RETURNING *`,
+      [full_name, national_id, phone_number, works_for_house, isibo, id]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update helper' });
+  }
+});
+app.delete('/helpers/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM house_helpers WHERE id = $1', [id]);
+    res.json({ message: 'Helper deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete helper' });
+  }
+});
+
+// Thoughts
+app.post('/thoughts', async (req, res) => {
+  const { user_id, message } = req.body;
+  if (!user_id || !message) return res.status(400).json({ error: 'Missing fields' });
+  try {
+    const result = await pool.query(`
+      INSERT INTO thoughts (user_id, message) VALUES ($1, $2) RETURNING *`,
+      [user_id, message]);
+    res.status(201).json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to save thought' });
+  }
+});
+app.get('/thoughts', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT t.*, r.full_name
+      FROM thoughts t
+      JOIN users u ON t.user_id = u.id
+      JOIN residents r ON u.resident_id = r.id
+      ORDER BY t.created_at DESC`);
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch thoughts' });
+  }
+});
+
+// Cell Updates
+app.post('/updates', async (req, res) => {
+  const { message } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO cell_updates (message) VALUES ($1) RETURNING *',
+      [message]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to save update' });
+  }
+});
+app.get('/updates', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM cell_updates ORDER BY created_at DESC'
+    );
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch updates' });
+  }
+});
+
+// Irondo Team
+app.get('/irondo_team', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM irondo_team ORDER BY shift_type, full_name');
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch Irondo team' });
+  }
+});
+app.get('/irondo_team/day', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM irondo_team WHERE shift_type = $1 ORDER BY full_name',
+      ['day']
+    );
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to load day shift' });
+  }
+});
+app.get('/irondo_team/night', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM irondo_team WHERE shift_type = $1 ORDER BY full_name',
+      ['night']
+    );
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to load night shift' });
+  }
+});
+app.post('/irondo_team', async (req, res) => {
+  const { full_name, phone, shift_type } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO irondo_team (full_name, phone, shift_type)
+      VALUES ($1, $2, $3) RETURNING *`,
+      [full_name, phone, shift_type]);
+    res.status(201).json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to add member' });
+  }
+});
+app.put('/irondo_team/:id', async (req, res) => {
+  const { id } = req.params;
+  const { full_name, phone, shift_type } = req.body;
+  try {
+    const result = await pool.query(`
+      UPDATE irondo_team SET
+      full_name = $1, phone = $2, shift_type = $3
+      WHERE id = $4 RETURNING *`,
+      [full_name, phone, shift_type, id]);
+    res.json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to update member' });
+  }
+});
+app.delete('/irondo_team/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM irondo_team WHERE id = $1', [id]);
+    res.json({ message: '✅ Member removed' });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete member' });
+  }
+});
+
+// Isibo Leaders
+app.post('/isibo_leaders', async (req, res) => {
+  const { full_name, isibo, phone, email } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO isibo_leaders (full_name, isibo, phone, email)
+      VALUES ($1, $2, $3, $4) RETURNING *`,
+      [full_name, isibo, phone, email]);
+    res.status(201).json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to save isibo leader' });
+  }
+});
+app.get('/isibo_leaders', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM isibo_leaders ORDER BY isibo ASC');
+    res.json(result.rows);
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch isibo leaders' });
+  }
+});
+app.put('/isibo_leaders/:id', async (req, res) => {
+  const { full_name, isibo, phone, email } = req.body;
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`
+      UPDATE isibo_leaders
+      SET full_name=$1, isibo=$2, phone=$3, email=$4
+      WHERE id=$5 RETURNING *`,
+      [full_name, isibo, phone, email, id]);
+    res.json(result.rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Failed to update isibo leader' });
+  }
+});
+app.delete('/isibo_leaders/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM isibo_leaders WHERE id = $1', [id]);
+    res.json({ message: 'Deleted' });
+  } catch {
+    res.status(500).json({ error: 'Failed to delete leader' });
+  }
+});
+
+// DB health check
 
 
-// ✅ DB Test
+
 app.get('/db-test', async (req, res) => {
   try {
     await pool.query('SELECT NOW()');
