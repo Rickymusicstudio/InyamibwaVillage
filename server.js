@@ -10,9 +10,10 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
 
+console.log("🧪 Connecting to:", process.env.DATABASE_URL);
 // ✅ PostgreSQL connection
 const pool = new Pool({
-  connectionString: 'postgresql://admin:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
@@ -112,6 +113,15 @@ app.get('/residents', async (req, res) => {
   } catch (err) {
     console.error('❌ DB error in /residents:', err.message);
     res.status(500).json({ error: 'Failed to fetch residents' });
+  }
+});
+
+app.get('/debug-residents', async (req, res) => {
+  try {
+    const r = await pool.query('SELECT * FROM residents');
+    res.json({ count: r.rowCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
