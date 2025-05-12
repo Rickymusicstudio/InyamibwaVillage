@@ -87,13 +87,13 @@
   <p class="role-label">Logged in as: <span id="adminName"></span> (<span id="adminRole"></span>)</p>
 
   <div class="link-grid">
-    <a href="residents.html">👥 Residents</a>
+    <a href="inyamibwa_residents.html">👥 Residents</a>
     <a href="leader.html">👨‍⚖️ Cell Leader</a>
     <a href="isibo_leaders.html">🏘️ Isibo Leaders</a>
     <a href="helpers.html">🧹 House Helpers</a>
     <a href="updates.html">📢 Cell Updates</a>
     <a href="thoughts.html">💬 Thoughts</a>
-    <a href="irondo.html">🛡️ Irondo Team</a>
+    <a href="security.html">🛡️ Irondo Team</a>
     <a href="dashboard.html">📊 Dashboard</a>
     <button class="logout-btn" onclick="logout()">🚪 Logout</button>
   </div>
@@ -107,7 +107,7 @@
     window.location.href = 'index.html';
   }
 
-  document.getElementById('adminName').textContent = user.full_name;
+  document.getElementById('adminName').textContent = user.names || user.full_name || user.national_id;
   document.getElementById('adminRole').textContent = user.role;
 
   function logout() {

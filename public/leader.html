@@ -85,28 +85,38 @@
 </form>
 
 <script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user || user.role !== 'admin') {
+    alert('Access denied: Admins only');
+    window.location.href = 'index.html';
+  }
+
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   let currentLeaderId = null;
   const form = document.getElementById('leaderForm');
   const message = document.getElementById('message');
 
   async function loadLeader() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/leader');
+      const res = await fetch(`${API_URL}/leader`);
       const leader = await res.json();
 
-      if (leader.full_name) {
+      if (leader.full_name || leader.names) {
         currentLeaderId = leader.id;
         document.getElementById('leaderInfo').innerHTML = `
-          <strong>${leader.full_name}</strong><br>
-          📞 ${leader.phone_number}<br>
-          ✉️ ${leader.email}<br>
+          <strong>${leader.full_name || leader.names}</strong><br>
+          📞 ${leader.phone_number || leader.phone}<br>
+          ✉️ ${leader.email || '-'}<br>
           Added on: ${new Date(leader.created_at).toLocaleString()}
         `;
         document.getElementById('deleteBtn').style.display = 'block';
 
-        document.getElementById('full_name').value = leader.full_name;
-        document.getElementById('phone_number').value = leader.phone_number;
-        document.getElementById('email').value = leader.email;
+        document.getElementById('full_name').value = leader.full_name || '';
+        document.getElementById('phone_number').value = leader.phone_number || '';
+        document.getElementById('email').value = leader.email || '';
       } else {
         document.getElementById('leaderInfo').textContent = 'No leader found yet.';
         document.getElementById('deleteBtn').style.display = 'none';
@@ -125,7 +135,7 @@
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/leader', {
+      const res = await fetch(`${API_URL}/leader`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -145,7 +155,7 @@
   document.getElementById('deleteBtn').addEventListener('click', async () => {
     if (!confirm('Are you sure you want to delete the leader?')) return;
     try {
-      const res = await fetch(`http://127.0.0.1:5000/leader/${currentLeaderId}`, {
+      const res = await fetch(`${API_URL}/leader/${currentLeaderId}`, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error();

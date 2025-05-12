@@ -44,7 +44,7 @@
       background: #eef5ff;
       border-left: 5px solid #0033a0;
     }
-    #message {
+    #feedback {
       text-align: center;
       margin-top: 10px;
       font-weight: bold;
@@ -64,23 +64,33 @@
 <div class="updates-list" id="updatesContainer">Loading updates...</div>
 
 <script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user || user.role !== 'admin') {
+    alert('Access denied: Admins only');
+    window.location.href = 'index.html';
+  }
+
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   async function loadUpdates() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/updates');
+      const res = await fetch(`${API_URL}/updates`);
       const data = await res.json();
       const container = document.getElementById('updatesContainer');
 
-      if (data.length === 0) {
+      if (!Array.isArray(data) || data.length === 0) {
         container.textContent = 'No updates posted yet.';
         return;
       }
 
-      container.innerHTML = data.map(update =>
-        `<div class="update">
+      container.innerHTML = data.map(update => `
+        <div class="update">
           ${update.message}<br>
           <small>🕒 ${new Date(update.created_at).toLocaleString()}</small>
-        </div>`
-      ).join('');
+        </div>
+      `).join('');
     } catch {
       document.getElementById('updatesContainer').textContent = '❌ Failed to load updates.';
     }
@@ -93,7 +103,7 @@
     if (!msg) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/updates', {
+      const res = await fetch(`${API_URL}/updates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg })

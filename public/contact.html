@@ -123,19 +123,25 @@
   const user = JSON.parse(localStorage.getItem('loggedUser'));
   if (!user) window.location.href = 'index.html';
 
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   async function loadContacts() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/residents');
+      const res = await fetch(`${API_URL}/residents`, {
+        headers: { 'x-role': user.role || 'admin' }
+      });
       const data = await res.json();
       const tbody = document.querySelector('#contactsTable tbody');
       tbody.innerHTML = '';
 
-      const filtered = data.filter(r => r.phone_number || r.email);
+      const filtered = data.filter(r => r.phone || r.phone_number || r.email);
       filtered.forEach(resident => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${resident.full_name}</td>
-          <td>${resident.phone_number || 'N/A'}</td>
+          <td>${resident.names || resident.full_name || '-'}</td>
+          <td>${resident.phone || resident.phone_number || 'N/A'}</td>
           <td>${resident.email || 'N/A'}</td>
         `;
         tbody.appendChild(row);

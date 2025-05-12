@@ -128,9 +128,13 @@
   const user = JSON.parse(localStorage.getItem('loggedUser'));
   if (!user) window.location.href = 'index.html';
 
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   async function loadThoughts() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/thoughts');
+      const res = await fetch(`${API_URL}/thoughts`);
       const data = await res.json();
       const container = document.getElementById('thoughtsContainer');
 
@@ -141,8 +145,8 @@
 
       container.innerHTML = data.map(t => `
         <div class="thought">
-          <strong>${t.full_name}</strong><br>
-          ${t.message}<br>
+          <strong>${t.resident_name || 'Anonymous'}</strong><br>
+          ${t.content || t.message}<br>
           <small>${new Date(t.created_at).toLocaleString()}</small>
         </div>
       `).join('');
@@ -158,10 +162,10 @@
     if (!text) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/thoughts', {
+      const res = await fetch(`${API_URL}/thoughts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, message: text })
+        body: JSON.stringify({ resident_id: user.id, content: text })
       });
 
       if (!res.ok) throw new Error();

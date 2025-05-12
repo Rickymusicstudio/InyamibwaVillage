@@ -123,9 +123,13 @@
   const user = JSON.parse(localStorage.getItem('loggedUser'));
   if (!user) window.location.href = 'index.html';
 
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   async function loadIrondoTeam() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/irondo_team');
+      const res = await fetch(`${API_URL}/irondo_team`);
       const team = await res.json();
       const tbody = document.querySelector('#irondoTable tbody');
       tbody.innerHTML = '';
@@ -133,13 +137,13 @@
       team.forEach(member => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${member.full_name}</td>
-          <td>${member.phone || 'N/A'}</td>
-          <td>${member.shift_type ? member.shift_type.toUpperCase() : 'N/A'}</td>
+          <td>${member.name || member.full_name || 'N/A'}</td>
+          <td>${member.phone || member.phone_number || 'N/A'}</td>
+          <td>${member.shift || member.shift_type || 'N/A'}</td>
         `;
         tbody.appendChild(row);
       });
-    } catch {
+    } catch (err) {
       document.querySelector('#irondoTable tbody').innerHTML =
         '<tr><td colspan="3">❌ Failed to load Irondo team data.</td></tr>';
     }

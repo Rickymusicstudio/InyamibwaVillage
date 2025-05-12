@@ -2,157 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Inyamibwa Dashboard</title>
+  <title>📊 Umudugudu Dashboard</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #e9f8ee;
       margin: 0;
+      background: #f4f9f7;
+      padding: 20px;
     }
 
     header {
+      text-align: center;
+      padding: 20px;
       background: #263ea0;
       color: white;
-      padding: 20px;
-      text-align: center;
-      position: relative;
     }
 
-    #logoutBtn {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      background: #d9534f;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    nav {
-      background-color: #1d2e75;
-      padding: 10px 0;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: center;
-      list-style: none;
+    h1 {
       margin: 0;
-      padding: 0;
     }
 
-    .navbar li {
-      margin: 0 20px;
+    .dashboard {
+      max-width: 1000px;
+      margin: 30px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
     }
 
-    .navbar a {
-      background-color: #263ea0;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      padding: 6px 12px;
-      border-radius: 4px;
-    }
-
-    section {
-      margin: 20px auto;
-      padding: 20px;
-      max-width: 900px;
+    .card {
       background: white;
-      border-radius: 12px;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      text-align: center;
       border-top: 6px solid #f4d600;
-      box-shadow: 0 0 12px rgba(0,0,0,0.05);
     }
 
-    h2 {
+    .card h2 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #007f3f;
+    }
+
+    .card p {
+      margin-top: 10px;
+      font-weight: bold;
       color: #263ea0;
     }
 
-    .update {
-      background: #f1f9ff;
-      border-left: 4px solid #263ea0;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 4px;
+    section {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
     }
 
-    .update small {
-      display: block;
-      color: gray;
+    h3 {
+      margin-top: 0;
+      color: #003366;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    #error {
+      text-align: center;
+      margin-top: 20px;
+      color: red;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Murakaza neza ku rubuga rw’umudugudu w’Inyamibwa!</h1>
-  <p>Logged in as: <strong><span id="userName"></span></strong></p>
-  <button id="logoutBtn">Logout</button>
+  <h1>📊 Umudugudu Dashboard</h1>
 </header>
 
-<nav>
-  <ul class="navbar">
-    <li><a href="dashboard.html">Ahabanza</a></li>
-    <li><a href="inyamibwa_residents.html">Abatuye Umudugudu</a></li>
-    <li><a href="security.html">Umutekano</a></li>
-    <li><a href="contact.html">Contact</a></li>
-    <li><a href="thoughts.html">Ibitekerezo</a></li>
-  </ul>
-</nav>
+<div class="dashboard" id="dashboardStats"></div>
 
-<section>
-  <h2>Ikaze</h2>
-  <p>
-    Murakaza neza k'urubuga rw'Umudugudu w'Inyamibwa. Uru rubuga rugenewe  ihuriro ry’abaturage bose b’umudugudu wacu,
-    aho mushobora kubona amakuru y'umudugudu, ubufasha butandukanye, ndetse no gutanga ibitekerezo byubaka umudugudu wacu.
-  </p>
-  <ul>
-    <li>📌 Amakuru y’ingirakamaro yerekeye ibikorwa n’iterambere ry’umudugudu</li>
-    <li>🛠️ Ubufasha mu byerekeye imibereho myiza, umutekano, n’imibano</li>
-    <li>💬 Uburyo bwo gutanga ibibazo, ibitekerezo cyangwa ibitekerezo byubaka</li>
-    <li>🔗 Serivisi zihuza abaturage n’ubuyobozi</li>
-  </ul>
-  <p>
-    Dukomeze twubake umudugudu utekanye kandi uhamye, dutahiriza umugozi umwe.
-  </p>
-  <strong>Murakaza neza, kandi murisanga!</strong>
+<section id="irondoDay">
+  <h3>☀️ Day Shift Irondo Members</h3>
+  <ul id="dayList">Loading...</ul>
 </section>
 
-<section>
-  <h2>📢 Announcements</h2>
-  <div id="updatesContainer">Loading updates...</div>
+<section id="irondoNight">
+  <h3>🌙 Night Shift Irondo Members</h3>
+  <ul id="nightList">Loading...</ul>
 </section>
+
+<div id="error"></div>
 
 <script>
   const user = JSON.parse(localStorage.getItem('loggedUser'));
-  if (!user) window.location.href = 'index.html';
-  document.getElementById('userName').textContent = user.full_name || user.national_id;
-
-  document.getElementById('logoutBtn').onclick = () => {
-    localStorage.removeItem('loggedUser');
+  if (!user || user.role !== 'admin') {
+    alert('Access denied: Admins only');
     window.location.href = 'index.html';
-  };
+  }
 
-  async function loadUpdates() {
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
+  async function loadStats() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/updates');
-      const updates = await res.json();
-      const container = document.getElementById('updatesContainer');
-      container.innerHTML = updates.map(u => `
-        <div class="update">
-          <p>${u.message}</p>
-          <small>🕒 ${new Date(u.created_at).toLocaleString()}</small>
-        </div>
-      `).join('');
+      const res = await fetch(`${API_URL}/stats`);
+      const stats = await res.json();
+      const container = document.getElementById('dashboardStats');
+      container.innerHTML = `
+        <div class="card"><h2>${stats.residents}</h2><p>Residents</p></div>
+        <div class="card"><h2>${stats.house_helpers}</h2><p>House Helpers</p></div>
+        <div class="card"><h2>${stats.thoughts}</h2><p>Thoughts</p></div>
+        <div class="card"><h2>${stats.updates}</h2><p>Updates</p></div>
+      `;
     } catch {
-      document.getElementById('updatesContainer').innerHTML = '<p>❌ Failed to load updates.</p>';
+      document.getElementById('error').textContent = '❌ Failed to load stats.';
     }
   }
 
-  loadUpdates();
+  async function loadIrondoTeam(shift, containerId) {
+    try {
+      const res = await fetch(`${API_URL}/irondo_team/${shift}`);
+      const team = await res.json();
+      const ul = document.getElementById(containerId);
+      if (!Array.isArray(team) || team.length === 0) {
+        ul.innerHTML = `<li>No ${shift} shift members found.</li>`;
+        return;
+      }
+
+      ul.innerHTML = team.map(member =>
+        `<li><strong>${member.full_name}</strong> — ${member.phone || 'N/A'}</li>`
+      ).join('');
+    } catch {
+      document.getElementById(containerId).innerHTML = `<li>❌ Failed to load ${shift} shift.</li>`;
+    }
+  }
+
+  loadStats();
+  loadIrondoTeam('day', 'dayList');
+  loadIrondoTeam('night', 'nightList');
 </script>
 
 </body>

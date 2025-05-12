@@ -84,27 +84,47 @@
 <div class="leaders-list" id="leadersContainer">Loading isibo leaders...</div>
 
 <script>
+  const user = JSON.parse(localStorage.getItem('loggedUser'));
+  if (!user || user.role !== 'admin') {
+    alert('Access denied: Admins only');
+    window.location.href = 'index.html';
+  }
+
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://inyamibwa-backend.onrender.com';
+
   let editingId = null;
+
+  function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[tag]));
+  }
 
   async function loadLeaders() {
     try {
-      const res = await fetch('http://127.0.0.1:5000/isibo_leaders');
+      const res = await fetch(`${API_URL}/isibo_leaders`);
       const data = await res.json();
       const container = document.getElementById('leadersContainer');
-      if (data.length === 0) {
+      if (!Array.isArray(data) || data.length === 0) {
         container.textContent = 'No isibo leaders found yet.';
         return;
       }
-      container.innerHTML = data.map(i =>
-        `<div class="leader">
-          <strong>${i.full_name}</strong><br>
-          🏘️ Isibo: ${i.isibo}<br>
-          📞 ${i.phone}<br>
-          ✉️ ${i.email}<br>
-          <button onclick="editLeader(${i.id}, '${i.full_name}', '${i.isibo}', '${i.phone}', '${i.email}')">📝 Edit</button>
+      container.innerHTML = data.map(i => `
+        <div class="leader">
+          <strong>${escapeHTML(i.full_name)}</strong><br>
+          🏘️ Isibo: ${escapeHTML(i.isibo)}<br>
+          📞 ${escapeHTML(i.phone)}<br>
+          ✉️ ${escapeHTML(i.email)}<br>
+          <button onclick="editLeader(${i.id}, '${escapeHTML(i.full_name)}', '${escapeHTML(i.isibo)}', '${escapeHTML(i.phone)}', '${escapeHTML(i.email)}')">📝 Edit</button>
           <button onclick="deleteLeader(${i.id})" style="background:red;">🗑️ Delete</button>
-        </div>`
-      ).join('');
+        </div>
+      `).join('');
     } catch {
       document.getElementById('leadersContainer').textContent = '❌ Failed to load isibo leaders.';
     }
@@ -122,7 +142,9 @@
   async function deleteLeader(id) {
     if (!confirm('Delete this isibo leader?')) return;
     try {
-      const res = await fetch(`http://127.0.0.1:5000/isibo_leaders/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/isibo_leaders/${id}`, {
+        method: 'DELETE'
+      });
       if (!res.ok) throw new Error();
       loadLeaders();
     } catch {
@@ -143,8 +165,8 @@
 
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId
-      ? `http://127.0.0.1:5000/isibo_leaders/${editingId}`
-      : 'http://127.0.0.1:5000/isibo_leaders';
+      ? `${API_URL}/isibo_leaders/${editingId}`
+      : `${API_URL}/isibo_leaders`;
 
     try {
       const res = await fetch(url, {
