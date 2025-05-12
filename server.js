@@ -117,6 +117,7 @@ app.get('/residents', async (req, res) => {
     const result = await pool.query('SELECT * FROM residents ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
+    console.error('❌ DB Error:', err.message); // <-- this line will help
     res.status(500).json({ error: 'Failed to fetch residents' });
   }
 });
