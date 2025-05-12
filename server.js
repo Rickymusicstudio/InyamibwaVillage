@@ -4,8 +4,6 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-
-
 const multer = require('multer');
 const path = require('path');
 
@@ -15,9 +13,10 @@ const port = process.env.PORT || 5000;
 
 // ✅ PostgreSQL connection
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
+  connectionString: 'postgresql://admin:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
   ssl: { rejectUnauthorized: false }
 });
+
 
 
 // ✅ Middleware
