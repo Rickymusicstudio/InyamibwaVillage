@@ -12,7 +12,9 @@ const port = process.env.PORT || 5000;
 // PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Middleware
@@ -123,14 +125,16 @@ app.put('/residents/:id', async (req, res) => {
     res.status(500).json({ error: 'Update failed' });
   }
 });
-app.delete('/residents/:id', async (req, res) => {
+app.get('/residents', async (req, res) => {
   try {
-    await pool.query('DELETE FROM residents WHERE id = $1', [req.params.id]);
-    res.json({ message: 'Resident deleted' });
-  } catch {
-    res.status(500).json({ error: 'Delete failed' });
+    const result = await pool.query('SELECT * FROM residents ORDER BY id DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ /residents error:', err); // 👈 Add this
+    res.status(500).json({ error: 'Failed to fetch residents' });
   }
 });
+
 
 // Dashboard Stats
 app.get('/stats', async (req, res) => {
