@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 
 // ✅ PostgreSQL connection
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
+  connectionString: 'postgresql://admin:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
   ssl: { rejectUnauthorized: false }
 });
 
