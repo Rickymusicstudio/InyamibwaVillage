@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+
 const multer = require('multer');
 const path = require('path');
 
@@ -13,10 +14,9 @@ const port = process.env.PORT || 5000;
 
 // ✅ PostgreSQL connection
 const pool = new Pool({
-  connectionString: 'postgresql://admin:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
+  connectionString: 'postgresql://postgres:admin123@db.frcpgfqgsxvadrdjqtdo.supabase.co:5432/postgres',
   ssl: { rejectUnauthorized: false }
 });
-
 
 
 // ✅ Middleware
@@ -117,9 +117,9 @@ app.get('/residents', async (req, res) => {
     const result = await pool.query('SELECT * FROM residents ORDER BY id DESC');
     res.json(result.rows);
   } catch (err) {
-    console.error('❌ DB Error:', err.message); // <-- this line will help
-    res.status(500).json({ error: 'Failed to fetch residents' });
-  }
+  console.error('❌ DB error in /residents:', err.message);
+  res.status(500).json({ error: 'Failed to fetch residents' });
+}
 });
 
 // ✅ Update resident
