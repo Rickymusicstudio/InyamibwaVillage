@@ -12,11 +12,12 @@ const port = process.env.PORT || 5000;
 
 console.log("🧪 Connecting to:", process.env.DATABASE_URL);
 // ✅ PostgreSQL connection
+
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
-
 // ✅ Middleware
 app.use(cors());
 app.use(express.json());
