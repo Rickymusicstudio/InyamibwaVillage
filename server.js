@@ -559,4 +559,14 @@ app.delete('/isibo_leaders/:id', async (req, res) => {
   }
 });
 
+app.get('/db-test', async (req, res) => {
+  try {
+    await pool.query('SELECT NOW()'); // simple test
+    res.send('✅ Database is connected!');
+  } catch (err) {
+    console.error('❌ DB test failed:', err.message);
+    res.status(500).send('❌ Database connection failed!');
+  }
+});
+
 
