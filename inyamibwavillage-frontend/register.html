@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iyandikishe - Inyamibwa Village</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>Iyandikishe</h1>
+    <form id="registerForm">
+      <label>Izina ryose (Full Name):</label>
+      <input type="text" id="full_name" required />
+
+      <label>Indangamuntu (National ID):</label>
+      <input type="text" id="national_id" required />
+
+      <label>Email:</label>
+      <input type="email" id="email" />
+
+      <label>Telephone:</label>
+      <input type="text" id="phone_number" />
+
+      <label>Inzu (House Number):</label>
+      <input type="text" id="house" />
+
+      <label>Isibo:</label>
+      <input type="text" id="isibo" />
+
+      <label>Uburyo Atuyemo:</label>
+      <select id="resident_type">
+        <option value="permanent">Permanent</option>
+        <option value="temporary">Renter</option>
+      </select>
+
+      <label>Ufite Umukozi wo Murugo?</label>
+      <select id="has_house_worker">
+        <option value="true">Yego</option>
+        <option value="false">Oya</option>
+      </select>
+
+      <label>Inshingano (Role):</label>
+      <select id="role" required>
+        <option value="resident">Resident</option>
+        <option value="isibo_leader">Isibo Leader</option>
+        <option value="cell_leader">Cell Leader</option>
+        <option value="security">Security</option>
+      </select>
+
+      <label>Ijambo ry'Ibanga (Password):</label>
+      <input type="password" id="password" required />
+
+      <button type="submit">Iyandikishe (Register)</button>
+    </form>
+
+    <p>Usanzwe ufite konti? <a href="login.html">Injira hano</a></p>
+  </div>
+
+  <script src="register.js"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twandikire - Inyamibwa Village</title>
+  <style>
+    :root {
+      --blue: #00aeef;
+      --yellow: #fcd116;
+      --green: #007a33;
+      --gray: #f0f0f0;
+      --white: #ffffff;
+      --text-dark: #1c1c1c;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, var(--blue), var(--green));
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--blue);
+      color: white;
+      padding: 1rem 2rem;
+    }
+
+    .navbar h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 2rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding-bottom: 0.2rem;
+      border-bottom: 2px solid transparent;
+    }
+
+    .navbar a.active,
+    .navbar a:hover {
+      border-bottom: 2px solid var(--yellow);
+    }
+
+    .content {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: var(--white);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    form label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    form select,
+    form textarea,
+    form input[type="file"] {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      margin-top: 0.3rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: var(--green);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      margin-top: 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: var(--blue);
+    }
+
+    #statusMessage {
+      font-weight: 600;
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <h2>🏡 Inyamibwa</h2>
+    <ul id="navLinks"></ul>
+  </nav>
+
+  <main class="content">
+    <h1>📨 Twandikire</h1>
+    <p>Ohereza ubutumwa ku buyobozi bw’umudugudu, ku mukuru w’isibo, cyangwa ku mukuru w’umutekano. Ushobora no kongeraho inyandiko.</p>
+
+    <div id="statusMessage" style="display:none;"></div>
+
+    <form id="contactForm" enctype="multipart/form-data">
+      <label for="recipient">Uwohereza:</label>
+      <select id="recipient" required>
+        <option value="cell_leader">Umukuru w’Umudugudu</option>
+        <option value="isibo_leader">Umukuru w’Isibo</option>
+        <option value="security_leader">Umukuru w’Umutekano</option>
+      </select>
+
+      <label for="message">Ubutumwa bwawe:</label>
+      <textarea id="message" rows="5" required></textarea>
+
+      <label for="attachment">Shyiraho inyandiko (PDF cyangwa ifoto):</label>
+      <input type="file" id="attachment" accept=".pdf,.jpg,.jpeg,.png" />
+
+      <button type="submit">Ohereza</button>
+    </form>
+  </main>
+
+ <script src="shared.js"></script>
+<script>
+  const token = JSON.parse(localStorage.getItem('loggedUser'))?.token;
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  renderNav('contact');
+
+  const form = document.getElementById('contactForm');
+  const statusMessage = document.getElementById('statusMessage');
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const to = document.getElementById('recipient').value;
+    const message = document.getElementById('message').value.trim();
+    const attachment = document.getElementById('attachment').files[0];
+
+    if (!message) return alert("Andika ubutumwa mbere yo kohereza.");
+
+    const formData = new FormData();
+    formData.append('to', to); // ✅ FIXED from 'to_role' → 'to'
+    formData.append('message', message);
+
+    // Optional: Add isibo if needed
+    if (to === 'isibo_leader') {
+      const residentIsibo = 'isibo_001'; // 🔁 Replace with actual value dynamically
+      formData.append('isibo', residentIsibo);
+    }
+
+    if (attachment) formData.append('attachment', attachment);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/messages', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token
+        },
+        body: formData
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to send message');
+
+      statusMessage.textContent = "Ubutumwa bwoherejwe!";
+      statusMessage.style.color = "green";
+      statusMessage.style.display = "block";
+      form.reset();
+    } catch (err) {
+      console.error('🚨 Message sending error:', err);
+      statusMessage.textContent = "Ntibyakunze kohereza ubutumwa.";
+      statusMessage.style.color = "red";
+      statusMessage.style.display = "block";
+    }
+  });
+</script>
+</body>
+</html>

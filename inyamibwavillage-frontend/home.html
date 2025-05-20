@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ahabanza - Inyamibwa Village</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <h2>🏡 Inyamibwa</h2>
+    <ul id="navLinks"></ul>
+  </nav>
+
+  <main class="content">
+    <section class="welcome">
+      <h1>Murakaza neza!</h1>
+      <p>Turakwishimiye ku rubuga rw'umudugudu wa Inyamibwa. Hano uzahasanga amakuru agezweho, ibitekerezo, n'ubuyobozi bw'umudugudu wawe.</p>
+    </section>
+
+    <section class="communique">
+      <h2>📣 Itangazo ry’Umudugudu</h2>
+      <div id="communiqueContainer">
+        <p>Biracyashakishwa...</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="shared.js"></script>
+  <script>
+    renderNav('home');
+
+    const loggedUser = JSON.parse(localStorage.getItem('loggedUser'));
+    const token = loggedUser?.token;
+
+    fetch('http://localhost:5000/api/thoughts?category=update', {
+      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    })
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('communiqueContainer');
+        if (!data.length) {
+          container.innerHTML = '<p>Nta tangazo ryabonetse.</p>';
+          return;
+        }
+
+        container.innerHTML = data.map(item => `
+          <div class="update" style="background: #f0f0f0; padding: 1rem; border-left: 4px solid #fcd116; margin-bottom: 1rem; border-radius: 5px;">
+            <p>${item.message}</p>
+            <small>
+              ${item.full_name ? `By: ${item.full_name}` : ''}
+              • ${new Date(item.created_at).toLocaleString('rw-RW')}
+            </small>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        document.getElementById('communiqueContainer').innerHTML =
+          '<p>Ntitwabashije kubona itangazo.</p>';
+      });
+  </script>
+</body>
+</html>
