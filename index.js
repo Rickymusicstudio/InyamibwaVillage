@@ -32,7 +32,6 @@ const leadersRoutes = require('./routes/leaders');
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
 const cellUpdatesRoutes = require('./routes/cellUpdates'); // Optional
 const statsRoutes = require('./routes/statsRoutes');
- // ✅ Correct placement
 
 // ============================
 // 🔗 Register Routes
@@ -44,7 +43,15 @@ app.use('/api/house-helpers', houseHelpersRoutes);
 app.use('/api/irondo', irondoRoutes);
 app.use('/api/leaders', leadersRoutes);
 app.use('/api/thoughts', thoughtsRoutes);
-app.use('/api/stats', statsRoutes); // ✅ exposes /api/stats/cell
+app.use('/api/stats', statsRoutes);
+
+// ============================
+// 🌐 Root Route
+// ============================
+app.get('/', (req, res) => {
+  res.send('🛠️ InyamibwaVillage API is live');
+});
+
 // ============================
 // 🧪 Health Check Route
 // ============================
