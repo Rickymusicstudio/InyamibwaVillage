@@ -25,8 +25,11 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     role
   };
 
+  const status = document.getElementById('statusMessage');
+  const API = window.API_BASE_URL;
+
   try {
-    const res = await fetch('http://localhost:5000/api/auth/register', {
+    const res = await fetch(`${API}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -35,13 +38,19 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const data = await res.json();
 
     if (res.ok) {
-      alert('Iyandikishwa ryagenze neza! Injira none.');
-      window.location.href = 'login.html';
+      status.textContent = 'Iyandikishwa ryagenze neza! Turakuyobora ku injira...';
+      status.style.color = 'green';
+      document.getElementById('registerForm').reset();
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
     } else {
-      alert(data.error || 'Registration failed');
+      status.textContent = data.error || 'Registration failed';
+      status.style.color = 'red';
     }
   } catch (err) {
-    alert('Error connecting to server');
     console.error('Registration error:', err);
+    status.textContent = 'Habaye ikibazo mu guhura na server.';
+    status.style.color = 'red';
   }
 });

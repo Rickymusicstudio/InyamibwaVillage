@@ -189,4 +189,23 @@ router.get('/test', (req, res) => {
   res.send('Leaders route is working ✅');
 });
 
+router.delete('/isibo/:national_id', authenticateToken, async (req, res) => {
+  try {
+    const { national_id } = req.params;
+
+    // Optional: Check if leader exists
+    const existing = await pool.query('SELECT * FROM isibo_leaders WHERE national_id = $1', [national_id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: 'Isibo leader not found' });
+    }
+
+    await pool.query('DELETE FROM isibo_leaders WHERE national_id = $1', [national_id]);
+
+    res.json({ message: 'Isibo leader deleted' });
+  } catch (err) {
+    console.error('❌ Error deleting isibo leader:', err);
+    res.status(500).json({ error: 'Failed to delete isibo leader' });
+  }
+});
+
 module.exports = router;

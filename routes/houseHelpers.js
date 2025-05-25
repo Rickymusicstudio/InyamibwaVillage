@@ -2,22 +2,26 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const {
-  addOrUpdateHelper,   // still used to add
+  addOrUpdateHelper,
   getAllHelpers,
   exportHelpersCSV,
-  getMyHelpers          // ✅ renamed
+  getMyHelpers,
+  deleteMyHelper
 } = require('../controllers/houseHelpersController');
 
-// Resident adds a helper
+// ✅ Resident adds a helper
 router.post('/', authenticateToken, addOrUpdateHelper);
 
-// Resident gets all their helpers
+// ✅ Resident gets their helpers
 router.get('/me', authenticateToken, getMyHelpers);
 
-// Admin views all
+// ✅ Resident deletes their helper
+router.delete('/me/:id', authenticateToken, deleteMyHelper);
+
+// ✅ Admin views all helpers
 router.get('/', authenticateToken, getAllHelpers);
 
-// Admin exports CSV
+// ✅ Admin exports all helpers to CSV
 router.get('/export', authenticateToken, exportHelpersCSV);
 
 module.exports = router;

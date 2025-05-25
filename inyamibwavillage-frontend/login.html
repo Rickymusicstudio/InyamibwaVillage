@@ -1,10 +1,102 @@
 <!DOCTYPE html>
 <html lang="rw">
-<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inyamibwa Village - Login</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --blue: #00aeef;
+      --green: #007a33;
+      --white: #fff;
+      --gray: #f0f0f0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, var(--blue), var(--green));
+      color: #1c1c1c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .login-container {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--green);
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0090c7;
+    }
+
+    p {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 500px) {
+      .login-container {
+        padding: 1.5rem;
+        margin: 0 1rem;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      input, button {
+        font-size: 16px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
@@ -20,8 +112,7 @@
     </form>
     <p>Nturarangiza kwiyandikisha? <a href="register.html">Iyandikishe hano</a></p>
   </div>
-
+   <script src="config/api.js"></script>
   <script src="login.js"></script>
 </body>
 </html>
-

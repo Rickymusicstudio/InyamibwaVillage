@@ -15,6 +15,9 @@ const headers = {
 const role = JSON.parse(atob(token.split('.')[1]))?.role;
 const canViewID = ['admin', 'cell_leader', 'isibo_leader', 'security'].includes(role);
 
+// 🌐 Use dynamic API base URL
+const API = window.API_BASE_URL;
+
 // Masking function for national ID
 function maskID(id) {
   return id?.length >= 4
@@ -44,7 +47,7 @@ function createResidentRow(person) {
 }
 
 // ✅ Fetch and display residents
-fetch("http://localhost:5000/api/residents", { headers })
+fetch(`${API}/api/residents`, { headers })
   .then((res) => res.json())
   .then((data) => {
     residentsTableBody.innerHTML = "";
@@ -68,7 +71,7 @@ fetch("http://localhost:5000/api/residents", { headers })
   });
 
 // ✅ Isibo Leaders
-fetch("http://localhost:5000/api/leaders/isibo", { headers })
+fetch(`${API}/api/leaders/isibo`, { headers })
   .then((res) => res.json())
   .then((data) => {
     isiboLeadersTableBody.innerHTML = "";
@@ -83,7 +86,7 @@ fetch("http://localhost:5000/api/leaders/isibo", { headers })
   });
 
 // ✅ Security Leader
-fetch("http://localhost:5000/api/leaders/security", { headers })
+fetch(`${API}/api/leaders/security`, { headers })
   .then((res) => res.json())
   .then((leader) => {
     securityLeaderDiv.innerHTML = `
@@ -102,7 +105,7 @@ fetch("http://localhost:5000/api/leaders/security", { headers })
   });
 
 // ✅ Cell Leader
-fetch("http://localhost:5000/api/leaders/cell", { headers })
+fetch(`${API}/api/leaders/cell`, { headers })
   .then((res) => res.json())
   .then((leader) => {
     cellLeaderDiv.innerHTML = `

@@ -5,7 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ahabanza - Inyamibwa Village</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    padding: 1rem;
+  }
+
+  .content {
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .welcome, .communique {
+    margin-top: 2rem;
+  }
+
+  .update {
+    background: #f0f0f0;
+    padding: 1rem;
+    border-left: 4px solid #fcd116;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+  }
+</style>
 </head>
+
 <body>
   <nav class="navbar">
     <h2>🏡 Inyamibwa</h2>
@@ -26,6 +51,7 @@
     </section>
   </main>
 
+  <script src="config/api.js"></script>
   <script src="shared.js"></script>
   <script>
     renderNav('home');
@@ -33,7 +59,7 @@
     const loggedUser = JSON.parse(localStorage.getItem('loggedUser'));
     const token = loggedUser?.token;
 
-    fetch('http://localhost:5000/api/thoughts?category=update', {
+    fetch(`${window.API_BASE_URL}/api/thoughts?category=update`, {
       headers: token ? { Authorization: 'Bearer ' + token } : {}
     })
       .then(res => res.json())
@@ -45,7 +71,7 @@
         }
 
         container.innerHTML = data.map(item => `
-          <div class="update" style="background: #f0f0f0; padding: 1rem; border-left: 4px solid #fcd116; margin-bottom: 1rem; border-radius: 5px;">
+          <div class="update">
             <p>${item.message}</p>
             <small>
               ${item.full_name ? `By: ${item.full_name}` : ''}

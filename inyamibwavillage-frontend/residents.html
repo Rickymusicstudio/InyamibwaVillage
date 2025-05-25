@@ -2,7 +2,7 @@
 <html lang="rw">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Abatuye Umudugudu - Inyamibwa</title>
   <style>
     :root {
@@ -70,6 +70,7 @@
 
     .table-container {
       overflow-x: auto;
+      width: 100%;
       margin-bottom: 2rem;
     }
 
@@ -100,20 +101,50 @@
       border-left: 4px solid var(--green);
       border-radius: 6px;
     }
+
+    @media (max-width: 700px) {
+      .content, .table-container {
+        padding: 1rem !important;
+        margin: 0.5rem !important;
+      }
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+      }
+      td {
+        padding: 0.5rem;
+        text-align: right;
+        position: relative;
+      }
+      td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: #007a33;
+      }
+      input[type="search"] {
+        width: 100% !important;
+        margin-bottom: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- ✅ NAVIGATION BAR -->
   <nav class="navbar">
     <h2>🏡 Inyamibwa</h2>
     <ul id="navLinks"></ul>
   </nav>
 
-  <!-- ✅ MAIN CONTENT -->
   <main class="content">
     <h1>👥 ABATUYE UMUDUGUDU</h1>
 
-    <!-- ✅ Residents Table -->
     <section>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2>Abaturage</h2>
@@ -137,7 +168,6 @@
       </div>
     </section>
 
-    <!-- ✅ Isibo Leaders -->
     <section>
       <h2>🧑‍🏫 Abatwarasibo</h2>
       <div class="table-container">
@@ -158,19 +188,16 @@
       </div>
     </section>
 
-    <!-- ✅ Security Leader -->
     <section>
       <h2>🛡️ Umukuru w’Umutekano</h2>
       <div id="securityLeaderInfo">Biracyashakishwa...</div>
     </section>
 
-    <!-- ✅ Cell Leader -->
     <section>
       <h2>👨‍⚖️ Umukuru w’Umudugudu</h2>
       <div id="cellLeaderInfo">Biracyashakishwa...</div>
     </section>
 
-    <!-- ✅ Abanyerondo Shift Table -->
     <section style="margin-top: 3rem;">
       <h2>👮 Abanyerondo bari ku kazi</h2>
       <div class="table-container">
@@ -188,7 +215,7 @@
     </section>
   </main>
 
-  <!-- ✅ JS Includes -->
+  <script src="config/api.js"></script>
   <script src="shared.js"></script>
   <script src="residents.js"></script>
   <script>
@@ -199,8 +226,7 @@
 
     renderNav('residents');
 
-    // ✅ Fetch and display Abanyerondo shift in table
-    fetch('http://localhost:5000/api/irondo/current-shift')
+    fetch(`${API_BASE_URL}/api/irondo/current-shift`)
       .then(res => res.json())
       .then(data => {
         const tbody = document.querySelector('#shiftTable tbody');
@@ -216,9 +242,9 @@
         rows.forEach(member => {
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td>${member.full_name}</td>
-            <td>${member.phone || '-'}</td>
-            <td>${member.shift}</td>
+            <td data-label="Izina">${member.full_name}</td>
+            <td data-label="Telefone">${member.phone || '-'}</td>
+            <td data-label="Shift">${member.shift}</td>
           `;
           tbody.appendChild(row);
         });

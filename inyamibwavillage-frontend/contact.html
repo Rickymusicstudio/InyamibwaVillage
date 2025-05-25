@@ -79,6 +79,7 @@
 
     form select,
     form textarea,
+    form input[type="text"],
     form input[type="file"] {
       width: 100%;
       padding: 0.6rem;
@@ -109,6 +110,10 @@
       margin-top: 1rem;
       color: green;
     }
+
+    #isiboField {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -131,6 +136,11 @@
         <option value="security_leader">Umukuru w’Umutekano</option>
       </select>
 
+      <div id="isiboField">
+        <label for="isibo">Isibo:</label>
+        <input type="text" id="isibo" placeholder="Andika izina cyangwa nimero y’isibo" />
+      </div>
+
       <label for="message">Ubutumwa bwawe:</label>
       <textarea id="message" rows="5" required></textarea>
 
@@ -141,62 +151,78 @@
     </form>
   </main>
 
- <script src="shared.js"></script>
-<script>
-  const token = JSON.parse(localStorage.getItem('loggedUser'))?.token;
-  if (!token) {
-    window.location.href = "login.html";
-  }
-
-  renderNav('contact');
-
-  const form = document.getElementById('contactForm');
-  const statusMessage = document.getElementById('statusMessage');
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const to = document.getElementById('recipient').value;
-    const message = document.getElementById('message').value.trim();
-    const attachment = document.getElementById('attachment').files[0];
-
-    if (!message) return alert("Andika ubutumwa mbere yo kohereza.");
-
-    const formData = new FormData();
-    formData.append('to', to); // ✅ FIXED from 'to_role' → 'to'
-    formData.append('message', message);
-
-    // Optional: Add isibo if needed
-    if (to === 'isibo_leader') {
-      const residentIsibo = 'isibo_001'; // 🔁 Replace with actual value dynamically
-      formData.append('isibo', residentIsibo);
+  <script src="config/api.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    const token = JSON.parse(localStorage.getItem('loggedUser'))?.token;
+    if (!token) {
+      window.location.href = "login.html";
     }
 
-    if (attachment) formData.append('attachment', attachment);
+    renderNav('contact');
 
-    try {
-      const res = await fetch('http://localhost:5000/api/messages', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token
-        },
-        body: formData
-      });
+    const API = window.API_BASE_URL;
+    const form = document.getElementById('contactForm');
+    const statusMessage = document.getElementById('statusMessage');
+    const recipientSelect = document.getElementById('recipient');
+    const isiboField = document.getElementById('isiboField');
 
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Failed to send message');
+    recipientSelect.addEventListener('change', () => {
+      if (recipientSelect.value === 'isibo_leader') {
+        isiboField.style.display = 'block';
+      } else {
+        isiboField.style.display = 'none';
+      }
+    });
 
-      statusMessage.textContent = "Ubutumwa bwoherejwe!";
-      statusMessage.style.color = "green";
-      statusMessage.style.display = "block";
-      form.reset();
-    } catch (err) {
-      console.error('🚨 Message sending error:', err);
-      statusMessage.textContent = "Ntibyakunze kohereza ubutumwa.";
-      statusMessage.style.color = "red";
-      statusMessage.style.display = "block";
-    }
-  });
-</script>
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const to = recipientSelect.value;
+      const message = document.getElementById('message').value.trim();
+      const attachment = document.getElementById('attachment').files[0];
+      const isiboInput = document.getElementById('isibo').value.trim();
+
+      if (!message) return alert("Andika ubutumwa mbere yo kohereza.");
+
+      const formData = new FormData();
+      formData.append('to', to);
+      formData.append('message', message);
+
+      if (to === 'isibo_leader') {
+        if (!isiboInput) {
+          alert("Injiza izina cyangwa nimero y’isibo mbere yo kohereza.");
+          return;
+        }
+        formData.append('isibo', isiboInput);
+      }
+
+      if (attachment) formData.append('attachment', attachment);
+
+      try {
+        const res = await fetch(`${API}/api/messages`, {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token
+          },
+          body: formData
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Failed to send message');
+
+        statusMessage.textContent = "Ubutumwa bwoherejwe!";
+        statusMessage.style.color = "green";
+        statusMessage.style.display = "block";
+        form.reset();
+        isiboField.style.display = 'none';
+      } catch (err) {
+        console.error('🚨 Message sending error:', err);
+        statusMessage.textContent = "Ntibyakunze kohereza ubutumwa.";
+        statusMessage.style.color = "red";
+        statusMessage.style.display = "block";
+      }
+    });
+  </script>
 </body>
 </html>
