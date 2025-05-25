@@ -209,21 +209,29 @@ router.delete('/isibo/:national_id', authenticateToken, async (req, res) => {
 });
 
 // ✅ DELETE Cell Leader (no param, just delete the current cell leader)
+// ✅ DELETE Cell Leader (also remove from residents table)
 router.delete('/cell', authenticateToken, async (req, res) => {
   try {
-    // Optionally check if there is a cell leader
-    const existing = await pool.query('SELECT * FROM cell_leader');
-    if (existing.rows.length === 0) {
+    // Check if there is a cell leader
+    const { rows } = await pool.query('SELECT * FROM cell_leader');
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'No cell leader to delete' });
     }
 
-    await pool.query('DELETE FROM cell_leader');
+    const nationalIdToDelete = rows[0].national_id;
 
-    res.json({ message: 'Cell leader deleted' });
+    // Delete from cell_leader table
+    await pool.query('DELETE FROM cell_leader WHERE national_id = $1', [nationalIdToDelete]);
+
+    // Optional: Also delete from residents table if you want to fully remove this person
+    await pool.query('DELETE FROM residents WHERE national_id = $1', [nationalIdToDelete]);
+
+    res.json({ message: 'Cell leader and associated resident deleted' });
   } catch (err) {
     console.error('❌ Error deleting cell leader:', err);
     res.status(500).json({ error: 'Failed to delete cell leader' });
   }
 });
+
 
 module.exports = router;
