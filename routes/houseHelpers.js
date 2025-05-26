@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const {
   addOrUpdateHelper,
   getAllHelpers,
@@ -19,9 +19,9 @@ router.get('/me', authenticateToken, getMyHelpers);
 router.delete('/me/:id', authenticateToken, deleteMyHelper);
 
 // ✅ Admin views all helpers
-router.get('/', authenticateToken, getAllHelpers);
+router.get('/', authenticateToken, authorizeRoles('admin'), getAllHelpers);
 
 // ✅ Admin exports all helpers to CSV
-router.get('/export', authenticateToken, exportHelpersCSV);
+router.get('/export', authenticateToken, authorizeRoles('admin'), exportHelpersCSV);
 
 module.exports = router;
