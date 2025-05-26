@@ -66,9 +66,21 @@ exports.deleteMyHelper = async (req, res) => {
   }
 };
 
-// Admin: Get all helpers (placeholder)
+// Admin: Get all helpers
 exports.getAllHelpers = async (req, res) => {
-  res.status(200).json([]); // Replace with real logic later
+  try {
+    const result = await pool.query(
+      `SELECT h.*, r.full_name AS resident_name, r.isibo, r.resident_type
+       FROM house_helpers h
+       LEFT JOIN residents r ON h.resident_id = r.id
+       ORDER BY h.created_at DESC`
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching all helpers:', err);
+    res.status(500).json({ error: 'Failed to fetch all helpers' });
+  }
 };
 
 // Admin: Export helpers as CSV (placeholder)
