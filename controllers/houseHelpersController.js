@@ -19,14 +19,22 @@ exports.getMyHelpers = async (req, res) => {
 // Resident: Add helper
 exports.addOrUpdateHelper = async (req, res) => {
   const userId = req.user.id;
-  const { full_name, national_id, phone_number } = req.body;
+  const { full_name, national_id, phone_number, house, employer_name } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO house_helpers (resident_id, full_name, national_id, phone_number)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO house_helpers 
+        (resident_id, full_name, national_id, phone_number, house, employer_name)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [userId, full_name, national_id || null, phone_number || null]
+      [
+        userId,
+        full_name,
+        national_id || null,
+        phone_number || null,
+        house,
+        employer_name
+      ]
     );
 
     res.status(201).json(result.rows[0]);
