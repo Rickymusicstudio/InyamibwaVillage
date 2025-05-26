@@ -87,3 +87,24 @@ exports.getAllHelpers = async (req, res) => {
 exports.exportHelpersCSV = async (req, res) => {
   res.send('CSV export not implemented yet');
 };
+// Admin: Delete any helper
+exports.deleteHelperAsAdmin = async (req, res) => {
+  const helperId = req.params.id;
+
+  try {
+    const result = await pool.query(
+      'DELETE FROM house_helpers WHERE id = $1 RETURNING *',
+      [helperId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Helper not found' });
+    }
+
+    res.json({ message: 'Helper deleted successfully (admin)' });
+  } catch (err) {
+    console.error('Error deleting helper as admin:', err);
+    res.status(500).json({ error: 'Failed to delete helper as admin' });
+  }
+};
+

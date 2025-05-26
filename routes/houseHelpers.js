@@ -6,22 +6,18 @@ const {
   getAllHelpers,
   exportHelpersCSV,
   getMyHelpers,
-  deleteMyHelper
+  deleteMyHelper,
+  deleteHelperAsAdmin
 } = require('../controllers/houseHelpersController');
 
-// ✅ Resident adds a helper
+// Resident routes
 router.post('/', authenticateToken, addOrUpdateHelper);
-
-// ✅ Resident gets their helpers
 router.get('/me', authenticateToken, getMyHelpers);
-
-// ✅ Resident deletes their helper
 router.delete('/me/:id', authenticateToken, deleteMyHelper);
 
-// ✅ Admin views all helpers
+// Admin routes
 router.get('/', authenticateToken, authorizeRoles('admin'), getAllHelpers);
-
-// ✅ Admin exports all helpers to CSV
 router.get('/export', authenticateToken, authorizeRoles('admin'), exportHelpersCSV);
+router.delete('/:id', authenticateToken, authorizeRoles('admin'), deleteHelperAsAdmin);
 
 module.exports = router;
