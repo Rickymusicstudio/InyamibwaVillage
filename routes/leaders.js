@@ -13,10 +13,10 @@ router.post('/isibo', authenticateToken, isiboLeaders.addIsiboLeader);
 router.put('/isibo/:national_id', authenticateToken, isiboLeaders.updateIsiboLeader);
 router.delete('/isibo/:national_id', authenticateToken, isiboLeaders.deleteIsiboLeader);
 
-// ✅ Cell Leader
+// ✅ Cell Leader (added :national_id to DELETE)
 router.get('/cell', authenticateToken, cellLeaders.getCellLeader);
 router.post('/cell', authenticateToken, cellLeaders.addCellLeader);
-router.delete('/cell', authenticateToken, cellLeaders.deleteCellLeader);
+router.delete('/cell/:national_id', authenticateToken, cellLeaders.deleteCellLeader);
 
 // ✅ Security Leader
 router.get('/security', authenticateToken, securityLeaders.getSecurityLeader);
