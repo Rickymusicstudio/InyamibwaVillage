@@ -33,12 +33,12 @@ exports.addMessage = async (req, res) => {
   }
 };
 
-// ✅ View messages for a leader
+// ✅ View messages for a leader (updated to include security_dashboard)
 exports.getMessagesForLeader = async (req, res) => {
   const role = req.query.role;
   const user = req.user;
 
-  if (!role || !['cell_leader', 'isibo_leader', 'security_leader'].includes(role)) {
+  if (!role || !['cell_leader', 'isibo_leader', 'security_leader', 'security_dashboard'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role' });
   }
 
@@ -85,7 +85,7 @@ exports.getMessagesForLeader = async (req, res) => {
         ORDER BY m.created_at DESC
       `;
       params = [leaderIsibo];
-    } else if (role === 'security_leader') {
+    } else if (role === 'security_leader' || role === 'security_dashboard') {
       query = `
         SELECT m.*, r.full_name, r.phone_number, r.isibo,
           CASE 
