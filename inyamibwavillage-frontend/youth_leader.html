@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Youth Leader | Inyamibwa Village</title>
+  <style>
+    :root {
+      --blue: #00aeef;
+      --green: #007a33;
+      --yellow: #fcd116;
+      --white: #ffffff;
+      --text-dark: #1c1c1c;
+      --gray: #f0f0f0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, var(--blue), var(--green));
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--blue);
+      color: white;
+      padding: 1rem 2rem;
+    }
+
+    .navbar h2 {
+      margin: 0;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 1rem;
+    }
+
+    .navbar a:hover {
+      border-bottom: 2px solid var(--yellow);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: var(--white);
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    form input {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: var(--green);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      margin-top: 1rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--blue);
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>🏡 Inyamibwa</h2>
+    <a href="admin_dashboard.html">⬅️ Back to Dashboard</a>
+  </div>
+
+  <div class="container">
+    <h1>🧑‍🎓 Youth Leader Management</h1>
+
+    <form id="youthLeaderForm">
+      <input type="text" id="fullName" placeholder="Full Name" required />
+      <input type="text" id="nationalID" placeholder="National ID" required />
+      <input type="text" id="phone" placeholder="Phone" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="house" placeholder="House" />
+      <input type="text" id="isibo" placeholder="Isibo" />
+      <input type="text" id="residentType" placeholder="Resident Type" />
+      <button type="submit">➕ Create Youth Leader</button>
+    </form>
+
+    <button onclick="getYouthLeaders()">📋 List Youth Leaders</button>
+  </div>
+
+  <script>
+    const API_BASE_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000'
+      : 'https://inyamibwavillage.onrender.com';
+
+    window.API_BASE_URL = API_BASE_URL;
+
+    const form = document.getElementById('youthLeaderForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const nationalID = document.getElementById('nationalID').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const house = document.getElementById('house').value.trim();
+      const isibo = document.getElementById('isibo').value.trim();
+      const residentType = document.getElementById('residentType').value.trim();
+
+      const data = {
+        fullName,
+        nationalID,
+        phone,
+        email,
+        house,
+        isibo,
+        residentType
+      };
+
+      try {
+        const response = await fetch(`${window.API_BASE_URL}/api/youth-leaders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+            // 'Authorization': `Bearer ${window.token || ''}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create Youth Leader.');
+        }
+
+        const result = await response.json();
+        alert('✅ Youth Leader created successfully!');
+        console.log(result);
+        form.reset();
+      } catch (error) {
+        console.error('❌ Error:', error);
+        alert(error.message);
+      }
+    });
+
+    function getYouthLeaders() {
+      fetch(`${window.API_BASE_URL}/api/youth-leaders`, {
+        headers: {
+          // 'Authorization': `Bearer ${window.token || ''}`
+        }
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch Youth Leaders.');
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('✅ Youth Leaders:', data);
+        alert('Youth Leaders fetched! Check console for details.');
+      })
+      .catch(error => {
+        console.error('❌ Error:', error);
+        alert('Failed to fetch Youth Leaders.');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -32,6 +32,8 @@ const leadersRoutes = require('./routes/leaders');
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
 const cellUpdatesRoutes = require('./routes/cellUpdates'); // Optional
 const statsRoutes = require('./routes/statsRoutes');
+const youthLeaderRoutes = require('./routes/youthLeaderRoutes');
+// 🆕 Youth Leader routes
 
 // ============================
 // 🔗 Register Routes
@@ -44,6 +46,8 @@ app.use('/api/irondo', irondoRoutes);
 app.use('/api/leaders', leadersRoutes);
 app.use('/api/thoughts', thoughtsRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/youth-leaders', youthLeaderRoutes);
+// 🆕 Add Youth Leader routes
 
 // ============================
 // 🌐 Root Route
