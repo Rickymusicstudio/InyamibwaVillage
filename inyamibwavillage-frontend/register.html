@@ -4,7 +4,96 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Iyandikishe - Inyamibwa Village</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --blue: #00aeef;
+      --green: #007a33;
+      --gray: #f0f0f0;
+      --white: #ffffff;
+      --text-dark: #1c1c1c;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, var(--blue), var(--green));
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .login-container {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container h1 {
+      text-align: center;
+      color: var(--green);
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin: 0.5rem 0 0.3rem;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.7rem;
+      background-color: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--blue);
+    }
+
+    #statusMessage {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    p {
+      text-align: center;
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
   <div class="login-container">
@@ -54,7 +143,7 @@
       <button type="submit">Iyandikishe (Register)</button>
     </form>
 
-    <p id="statusMessage" style="margin-top: 1rem; font-weight: bold;"></p>
+    <p id="statusMessage"></p>
     <p>Usanzwe ufite konti? <a href="login.html">Injira hano</a></p>
   </div>
 

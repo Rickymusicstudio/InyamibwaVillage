@@ -14,12 +14,22 @@
       --text-dark: #1c1c1c;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to bottom right, var(--blue), var(--green));
       color: var(--text-dark);
       min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--blue);
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
     }
 
     .navbar {
@@ -29,11 +39,26 @@
       background-color: var(--blue);
       color: white;
       padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
     }
 
     .navbar h2 {
       margin: 0;
       font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 1.8rem;
+      background: none;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-left: auto; /* align to right */
     }
 
     .navbar ul {
@@ -44,16 +69,14 @@
       padding: 0;
     }
 
-    .navbar a {
+    .navbar li a {
       color: white;
       text-decoration: none;
       font-weight: 600;
-      padding-bottom: 0.2rem;
-      border-bottom: 2px solid transparent;
     }
 
-    .navbar a.active,
-    .navbar a:hover {
+    .navbar li a.active,
+    .navbar li a:hover {
       border-bottom: 2px solid var(--yellow);
     }
 
@@ -64,11 +87,6 @@
       border-radius: 12px;
       padding: 2rem;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
     }
 
     form label {
@@ -114,11 +132,61 @@
     #isiboField {
       display: none;
     }
+
+    @media (max-width: 700px) {
+      .hamburger {
+        display: block;
+      }
+
+      .navbar ul {
+        flex-direction: column;
+        width: 100%;
+        background: linear-gradient(to bottom right, var(--blue), var(--green));
+        position: absolute;
+        top: 60px;
+        left: 0;
+        transition: max-height 0.3s ease-in-out;
+        overflow: hidden;
+        max-height: 0;
+        display: flex;
+        gap: 1rem;
+        height: calc(100vh - 60px);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .navbar ul.show {
+        max-height: 100vh;
+      }
+
+      .navbar li {
+        width: 80%;
+      }
+
+      .navbar li a {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        text-align: center;
+        background-color: var(--yellow);
+        color: #000;
+        font-weight: bold;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background 0.3s ease;
+      }
+
+      .navbar li a:hover {
+        background-color: #e6b800;
+      }
+    }
   </style>
 </head>
 <body>
   <nav class="navbar">
     <h2>🏡 Inyamibwa</h2>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
     <ul id="navLinks"></ul>
   </nav>
 
@@ -223,6 +291,11 @@
         statusMessage.style.display = "block";
       }
     });
+
+    function toggleMenu() {
+      const navLinks = document.getElementById('navLinks');
+      navLinks.classList.toggle('show');
+    }
   </script>
 </body>
 </html>
