@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -11,10 +11,9 @@ const app = express();
 // ============================
 // 🌍 CORS Configuration
 // ============================
-// Allow requests from anywhere (for testing/production)
 const corsOptions = {
-  origin: '*', // ⚠️ Change this to your Vercel frontend URL for security
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: '*', // You can replace with your frontend URL for security!
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
@@ -37,7 +36,6 @@ const leadersRoutes = require('./routes/leaders');
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
 const cellUpdatesRoutes = require('./routes/cellUpdates'); // Optional
 const statsRoutes = require('./routes/statsRoutes');
-const youthLeaderRoutes = require('./routes/youthLeaderRoutes');
 
 // ============================
 // 🔗 Register Routes
@@ -47,10 +45,9 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/residents', residentsRoutes);
 app.use('/api/house-helpers', houseHelpersRoutes);
 app.use('/api/irondo', irondoRoutes);
-app.use('/api/leaders', leadersRoutes);
+app.use('/api/leaders', leadersRoutes); // now includes youth leaders!
 app.use('/api/thoughts', thoughtsRoutes);
 app.use('/api/stats', statsRoutes);
-app.use('/api/youth-leaders', youthLeaderRoutes);
 
 // ============================
 // 🌐 Root Route
