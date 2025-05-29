@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 
-// Import modular controllers
+// ✅ Import modular controllers
 const isiboLeaders = require('../controllers/isiboLeadersController');
 const securityLeaders = require('../controllers/securityLeadersController');
 const cellLeaders = require('../controllers/cellLeadersController');
+const youthLeaderController = require('../controllers/youthLeaderController'); // ✅ youth leader
 
 // ✅ Isibo Leaders
 router.get('/isibo', authenticateToken, isiboLeaders.getIsiboLeaders);
@@ -13,7 +14,7 @@ router.post('/isibo', authenticateToken, isiboLeaders.addIsiboLeader);
 router.put('/isibo/:national_id', authenticateToken, isiboLeaders.updateIsiboLeader);
 router.delete('/isibo/:national_id', authenticateToken, isiboLeaders.deleteIsiboLeader);
 
-// ✅ Cell Leader (added :national_id to DELETE)
+// ✅ Cell Leader
 router.get('/cell', authenticateToken, cellLeaders.getCellLeader);
 router.post('/cell', authenticateToken, cellLeaders.addCellLeader);
 router.delete('/cell/:national_id', authenticateToken, cellLeaders.deleteCellLeader);
@@ -24,10 +25,10 @@ router.post('/security', authenticateToken, securityLeaders.addSecurityLeader);
 router.put('/security/:national_id', authenticateToken, securityLeaders.updateSecurityLeader);
 router.delete('/security/:national_id', authenticateToken, securityLeaders.deleteSecurityLeader);
 
-// ✅ Test route
-router.get('/test', (req, res) => {
-  res.send('Leaders route is working ✅');
-});
+// ✅ Youth Leader (added below!)
+router.get('/youth', authenticateToken, youthLeaderController.getYouthLeaders);
+router.post('/youth', authenticateToken, youthLeaderController.addYouthLeader);
+router.delete('/youth/:national_id', authenticateToken, youthLeaderController.deleteYouthLeader);
 
 // ✅ GET all leaders (aggregated view for admin)
 router.get('/all', authenticateToken, async (req, res) => {
@@ -38,6 +39,8 @@ router.get('/all', authenticateToken, async (req, res) => {
       SELECT full_name, national_id, phone AS phone_number, email, 'isibo_leader' AS role FROM isibo_leaders
       UNION
       SELECT full_name, national_id, phone AS phone_number, email, 'security_leader' AS role FROM security_leader
+      UNION
+      SELECT full_name, national_id, phone, email, 'youth_leader' AS role FROM youth_leaders
       ORDER BY full_name ASC
     `);
     res.json(rows);
@@ -45,6 +48,11 @@ router.get('/all', authenticateToken, async (req, res) => {
     console.error('❌ Error fetching all leaders:', err.message);
     res.status(500).json({ error: 'Failed to fetch all leaders' });
   }
+});
+
+// ✅ Test route
+router.get('/test', (req, res) => {
+  res.send('Leaders route is working ✅');
 });
 
 module.exports = router;
