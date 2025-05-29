@@ -26,9 +26,14 @@ router.put('/security/:national_id', authenticateToken, securityLeaders.updateSe
 router.delete('/security/:national_id', authenticateToken, securityLeaders.deleteSecurityLeader);
 
 // ✅ Youth Leader
-router.get('/youth', authenticateToken, youthLeaderController.getYouthLeaders);
+//router.get('/youth', authenticateToken, youthLeaderController.getYouthLeaders);
 router.post('/youth', authenticateToken, youthLeaderController.addYouthLeader);
 router.delete('/youth/:national_id', authenticateToken, youthLeaderController.deleteYouthLeader);
+// router.get('/youth', authenticateToken, youthLeaderController.getYouthLeaders);
+router.get('/youth', youthLeaderController.getYouthLeaders);
+router.put('/youth/:national_id', authenticateToken, youthLeaderController.updateYouthLeader);
+
+
 
 // ✅ GET all leaders
 router.get('/all', authenticateToken, async (req, res) => {
