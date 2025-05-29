@@ -25,12 +25,12 @@ router.post('/security', authenticateToken, securityLeaders.addSecurityLeader);
 router.put('/security/:national_id', authenticateToken, securityLeaders.updateSecurityLeader);
 router.delete('/security/:national_id', authenticateToken, securityLeaders.deleteSecurityLeader);
 
-// ✅ Youth Leader (added below!)
+// ✅ Youth Leader
 router.get('/youth', authenticateToken, youthLeaderController.getYouthLeaders);
 router.post('/youth', authenticateToken, youthLeaderController.addYouthLeader);
 router.delete('/youth/:national_id', authenticateToken, youthLeaderController.deleteYouthLeader);
 
-// ✅ GET all leaders (aggregated view for admin)
+// ✅ GET all leaders
 router.get('/all', authenticateToken, async (req, res) => {
   try {
     const { rows } = await require('../config/db').query(`
