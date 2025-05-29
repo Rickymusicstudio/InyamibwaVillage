@@ -17,7 +17,8 @@ const registerUser = async (req, res) => {
     role
   } = req.body;
 
-  const allowedRoles = ['resident', 'isibo_leader', 'cell_leader', 'security'];
+  // ✅ Add youth_leader to allowed roles
+  const allowedRoles = ['resident', 'isibo_leader', 'cell_leader', 'security', 'youth_leader'];
   if (!allowedRoles.includes(role)) {
     return res.status(400).json({ error: 'Invalid role selected' });
   }
@@ -25,6 +26,7 @@ const registerUser = async (req, res) => {
   console.log('📌 Registering user with role:', role);
 
   try {
+    // ✅ Check if user already exists
     const existing = await pool.query(
       'SELECT * FROM users WHERE national_id = $1',
       [national_id]
@@ -33,8 +35,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
+    // ✅ Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ✅ Insert resident details
     const residentResult = await pool.query(
       `INSERT INTO residents (full_name, national_id, phone_number, email, resident_type, house, isibo, has_house_worker)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -43,6 +47,7 @@ const registerUser = async (req, res) => {
     );
     const residentId = residentResult.rows[0].id;
 
+    // ✅ Insert user credentials
     const userResult = await pool.query(
       `INSERT INTO users (national_id, password, role, resident_id)
        VALUES ($1, $2, $3, $4)
@@ -52,33 +57,38 @@ const registerUser = async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // ➤ INSERT INTO LEADER TABLES BASED ON ROLE
+    // ✅ Insert into respective leader table if applicable
     if (role === 'isibo_leader') {
       await pool.query(
-        `INSERT INTO isibo_leaders (
-          full_name, national_id, phone, email, house, isibo, resident_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO isibo_leaders (full_name, national_id, phone, email, house, isibo, resident_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [full_name, national_id, phone_number, email, house, isibo, resident_type]
       );
       console.log('✅ Inserted into isibo_leaders');
     } else if (role === 'cell_leader') {
       await pool.query(
-        `INSERT INTO cell_leader (
-          full_name, national_id, phone_number, email
-        ) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO cell_leader (full_name, national_id, phone_number, email)
+         VALUES ($1, $2, $3, $4)`,
         [full_name, national_id, phone_number, email]
       );
       console.log('✅ Inserted into cell_leader');
     } else if (role === 'security') {
       await pool.query(
-        `INSERT INTO security_leader (
-          full_name, national_id, phone, email
-        ) VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO security_leader (full_name, national_id, phone, email)
+         VALUES ($1, $2, $3, $4)`,
         [full_name, national_id, phone_number, email]
       );
       console.log('✅ Inserted into security_leader');
+    } else if (role === 'youth_leader') {
+      await pool.query(
+        `INSERT INTO youth_leaders (full_name, national_id, phone_number, email, house, isibo, resident_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [full_name, national_id, phone_number, email, house, isibo, resident_type]
+      );
+      console.log('✅ Inserted into youth_leaders');
     }
 
+    // ✅ Generate JWT token
     const token = jwt.sign(
       {
         id: user.id,
@@ -99,12 +109,11 @@ const registerUser = async (req, res) => {
   }
 };
 
-// LOGIN USER (updated)
+// LOGIN USER
 const loginUser = async (req, res) => {
   const { national_id, password } = req.body;
 
   try {
-    // 🔍 Always get the user and fresh role from users table
     const userResult = await pool.query(
       `SELECT u.*, r.email, r.phone_number
        FROM users u
@@ -119,13 +128,11 @@ const loginUser = async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // 🔐 Validate password
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ error: 'Incorrect password' });
     }
 
-    // 🔑 Build payload with fresh DB role
     const payload = {
       id: user.id,
       resident_id: user.resident_id,
