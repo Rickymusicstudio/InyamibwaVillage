@@ -1,36 +1,46 @@
 const pool = require('../config/db');
 
-exports.createYouthLeader = async (req, res) => {
-  const { fullName, nationalID, phone, email, house, isibo, residentType } = req.body;
-
-  if (!fullName || !nationalID || !phone || !email) {
-    return res.status(400).json({ message: 'Full Name, National ID, Phone, and Email are required.' });
-  }
-
-  try {
-    const newLeader = await pool.query(
-      `INSERT INTO youth_leaders (full_name, national_id, phone, email, house, isibo, resident_type)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [fullName, nationalID, phone, email, house || null, isibo || null, residentType || null]
-    );
-
-    res.status(201).json({
-      message: 'Youth Leader created successfully.',
-      leader: newLeader.rows[0]
-    });
-  } catch (err) {
-    console.error('❌ Error creating Youth Leader:', err);
-    res.status(500).json({ message: 'Failed to create Youth Leader.' });
-  }
-};
-
 exports.getYouthLeaders = async (req, res) => {
   try {
-    const leaders = await pool.query('SELECT * FROM youth_leaders ORDER BY id DESC');
-    res.json(leaders.rows);
+    const { rows } = await pool.query('SELECT * FROM youth_leaders ORDER BY id DESC');
+    res.json(rows);
   } catch (err) {
-    console.error('❌ Error fetching Youth Leaders:', err);
-    res.status(500).json({ message: 'Failed to fetch Youth Leaders.' });
+    console.error('❌ Error fetching youth leaders:', err.message);
+    res.status(500).json({ error: 'Failed to fetch youth leaders' });
   }
 };
- 
+
+exports.addYouthLeader = async (req, res) => {
+  const { full_name, national_id, phone, email, house, isibo, resident_type } = req.body;
+
+  if (!full_name || !national_id || !phone || !email) {
+    return res.status(400).json({ message: 'Full name, National ID, Phone, and Email are required.' });
+  }
+
+  try {
+    await pool.query(`
+      INSERT INTO youth_leaders (full_name, national_id, phone, email, house, isibo, resident_type)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [full_name, national_id, phone, email, house || null, isibo || null, resident_type || null]);
+
+    res.status(201).json({ message: 'Youth leader created successfully' });
+  } catch (err) {
+    console.error('❌ Error adding youth leader:', err.message);
+    res.status(500).json({ error: 'Failed to add youth leader' });
+  }
+};
+
+exports.deleteYouthLeader = async (req, res) => {
+  const { national_id } = req.params;
+
+  try {
+    const { rowCount } = await pool.query('DELETE FROM youth_leaders WHERE national_id = $1', [national_id]);
+    if (rowCount === 0) {
+      return res.status(404).json({ error: 'Youth leader not found' });
+    }
+    res.json({ message: 'Youth leader deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting youth leader:', err.message);
+    res.status(500).json({ error: 'Failed to delete youth leader' });
+  }
+};
