@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 
+// ✅ Get Youth Leaders
 exports.getYouthLeaders = async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM youth_leaders ORDER BY id DESC');
@@ -10,6 +11,7 @@ exports.getYouthLeaders = async (req, res) => {
   }
 };
 
+// ✅ Add Youth Leader
 exports.addYouthLeader = async (req, res) => {
   const { full_name, national_id, phone, email, house, isibo, resident_type } = req.body;
 
@@ -30,6 +32,7 @@ exports.addYouthLeader = async (req, res) => {
   }
 };
 
+// ✅ Delete Youth Leader
 exports.deleteYouthLeader = async (req, res) => {
   const { national_id } = req.params;
 
